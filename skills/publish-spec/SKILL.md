@@ -30,7 +30,7 @@ The house style is a system, not one fixed page template:
 
 2. **Author or revise the spec:**
    - Apply the structural, editorial, visual, and responsive rules from [references/house-style.md](references/house-style.md).
-   - Keep the first screen legible, put the summary before long detail, ensure every visual aid and diagram works at mobile (`375px`), narrow (`768px`), and desktop (`1280px`) widths, and remove generic AI-writing or AI-design patterns.
+   - Keep the first screen legible, put the summary before long detail, ensure every visual aid and diagram works at mobile (`375px`), narrow (`768px`), and desktop (`1280px`) widths, and remove formulaic writing and design using "Avoid formulaic AI output" in [references/house-style.md](references/house-style.md). Do not score the page with a detector, and do not ask whether it sounds human.
 
 3. **Run automated static + headless-browser validation:**
    - Run the bundled linter from the spec directory before finishing or deploying:

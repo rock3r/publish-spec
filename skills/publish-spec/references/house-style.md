@@ -237,13 +237,25 @@ These are review signals, not proof that text or design was generated. Fix the u
 
 ### Writing
 
-- Delete canned openings such as “In today's rapidly evolving landscape”, prompt restatements, and generic scene-setting.
-- Avoid inflated bridge words and metaphors such as “delve”, “tapestry”, “realm”, “journey”, “unlock”, “transformative”, “pivotal”, or “testament”.
-- Do not repeatedly use “not only … but also”, “it is not X; it is Y”, rule-of-three slogans, rhetorical questions, or em dashes as a substitute for sentence structure.
-- Avoid uniform bullets where every item is a bold label, colon, and a paragraph. Use a table, short list, or ordinary prose when that better matches the information.
-- Remove redundant headings, miniature summaries, transition paragraphs, and endings that repeat what the reader just read.
-- Do not use vague authority (“experts agree”), generic praise, emotional uplift, fake quotations, or self-conscious assurances that the document is clear, complete, compliant, robust, or well-researched. Show the evidence.
-- Vary sentence structure naturally. Do not make every sentence equally polished, equally long, or equally formal.
+These are structural misses, not a word list. Swapping a banned word for a synonym is still a miss. Fix the missing fact or the broken sentence.
+
+- Do not write to the operator. No "Certainly", "Great question", "I'd be happy to", "Let's dive in", "Hope this helps", "In conclusion", "It's important to note", or "It's worth noting". Start on the subject.
+- Do not hang a present-participle tail on a sentence only to add importance: highlighting, underscoring, ensuring, reflecting, fostering, showcasing. Write the fact, or cut the tail.
+- Do not write "serves as", "stands as", "marks", "represents", or "boasts" where "is" or "has" works. Do not replace a verb with a stack of Latinate nouns.
+- Do not use "not only X but Y", "it's not X, it's Y", or a triad of synonyms ("robust, seamless, and scalable"). Make one precise claim.
+- Em dashes are allowed. Two in one sentence, or a dash whose only job is to stage a contrast, is a miss. Use a period.
+- No "Key takeaways" that repeat the summary. No bold label, colon, and paragraph as a default shape. No list whose items are all the same sentence. No closing paragraph that restates the executive summary.
+- Do not explain a step a technical reader can see in the command or the figure. Do not write "simply", "just", "easy", or "please note". Do not moralize ("it is essential that").
+- Do not write a version table, status matrix, or changelog as prose. Those are data. Say what is true now. No "coming in <version>", "as of this writing", or "soon".
+- Delete canned openings ("In today's rapidly evolving landscape"), generic scene-setting, and inflated metaphors (delve, tapestry, realm, journey, unlock, transformative, pivotal, testament) unless that word is the precise term.
+- Do not cite vague authority ("experts agree"), add generic praise, invent quotations, or assure the reader that the document is clear, complete, or well-researched.
+- Vary sentence length. Do not make every sentence equally long or equally formal.
+
+Bad: "The cache serves as a pivotal layer, ensuring low latency and highlighting the system's scalability."
+
+Good: "The cache skips reads it has already answered. Put the measured change next to the trace it came from."
+
+On the second pass, check only this list: participle tails, inflated copulas, chatbot openers, synonym triads, "not X but Y", a repeated ending, a claim with no source, a data table written as prose. One banned word is a warning. A page full of them is a failure. Do not ask whether the page "sounds human".
 
 ### Design
 

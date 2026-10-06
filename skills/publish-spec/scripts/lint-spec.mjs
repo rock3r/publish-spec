@@ -87,6 +87,9 @@ const SLOP_REPLACEMENTS = {
   comprehensive: 'full / state exact scope',
   commence: 'start',
   terminate: 'stop',
+  'serves as': 'is',
+  'stands as': 'is',
+  boasts: 'has',
 };
 
 const CANNED_PHRASES = [
@@ -94,7 +97,9 @@ const CANNED_PHRASES = [
   /not only\b[\s\S]{1,80}\bbut also\b/i,
   /experts agree/i,
   /it is worth noting that/i,
+  /it['’]s important to note/i,
   /needless to say/i,
+  /,\s*(?:highlighting|underscoring|fostering|showcasing)\b/i,
 ];
 
 // ── 3. Static HTML & CSS Linting ──────────────────────────────────────────────
