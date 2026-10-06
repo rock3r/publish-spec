@@ -1,0 +1,15 @@
+.DS_Store
+.agents/*
+!.agents/plugins/
+!.agents/plugins/marketplace.json
+.idea/
+*-workspace/
+.pi/
+.plans/
+node_modules/
+build/
+dist/
+
+# Never commit personal/environment-specific deployment guides
+skills/publish-spec/references/deploy.md
+**/references/deploy.md

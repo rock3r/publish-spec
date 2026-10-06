@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "publish-spec",
+  "displayName": "Publish Spec",
+  "version": "1.0.0",
+  "description": "Author, validate, and optionally publish static HTML design specs, PRDs, review sites, and technical walkthroughs with behavior-first structure, clear exhibits, and verified desktop/mobile layouts.",
+  "author": {
+    "name": "Sebastiano Poggi",
+    "url": "https://github.com/rock3r"
+  },
+  "homepage": "https://github.com/rock3r/publish-spec",
+  "repository": "https://github.com/rock3r/publish-spec",
+  "license": "Apache-2.0",
+  "keywords": ["specs", "prd", "rfc", "design", "html", "documentation", "agent"],
+  "skills": "./skills/"
+}

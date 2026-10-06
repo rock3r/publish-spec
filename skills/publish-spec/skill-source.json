@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "skill": "publish-spec",
+  "attribution": "Created by Sebastiano Poggi (Apache-2.0); incorporates claim-hierarchy, exhibit, and linting concepts inspired by Thariq Shihipar's html-plan skill (https://github.com/anthropics/claude-plugins-community/tree/main/html-plan/skills/html-plan, MIT).",
+  "sources": [
+    {
+      "type": "local-original-content",
+      "role": "original-content",
+      "label": "Static HTML spec house style, headless responsive linter, and pluggable deployment workflow",
+      "version": "2026-10-06",
+      "versionSource": "fetchDate",
+      "fetchedAt": "2026-10-06",
+      "license": "Apache-2.0"
+    },
+    {
+      "type": "upstream-skill",
+      "role": "supporting-reference",
+      "label": "Thariq Shihipar html-plan skill",
+      "url": "https://github.com/anthropics/claude-plugins-community/tree/main/html-plan/skills/html-plan",
+      "version": "88003be1129c09381d27100b37a8fdc21b3214bf",
+      "versionSource": "gitCommit",
+      "fetchedAt": "2026-10-06T18:08:00+02:00",
+      "license": "MIT",
+      "check": {
+        "type": "github",
+        "repository": "anthropics/claude-plugins-community",
+        "path": "html-plan/skills/html-plan",
+        "trackingRef": "main"
+      }
+    }
+  ]
+}

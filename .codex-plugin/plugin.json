@@ -1,0 +1,28 @@
+{
+  "name": "publish-spec",
+  "version": "1.0.0",
+  "description": "Author, validate, and optionally publish static HTML design specs, PRDs, review sites, and technical walkthroughs with behavior-first structure, clear exhibits, and verified desktop/mobile layouts.",
+  "author": {
+    "name": "Sebastiano Poggi",
+    "url": "https://github.com/rock3r"
+  },
+  "homepage": "https://github.com/rock3r/publish-spec",
+  "repository": "https://github.com/rock3r/publish-spec",
+  "license": "Apache-2.0",
+  "keywords": ["specs", "prd", "rfc", "design", "html", "documentation", "agent"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Publish Spec",
+    "shortDescription": "Author and lint static HTML design specs",
+    "longDescription": "Author, validate, and optionally publish static HTML design specs, PRDs, review sites, and technical walkthroughs with behavior-first structure, clear exhibits, and headless desktop/mobile layout verification.",
+    "developerName": "Sebastiano Poggi",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://github.com/rock3r/publish-spec",
+    "defaultPrompt": [
+      "Write a static HTML design spec for this feature.",
+      "Validate this spec's layout and prose rhythm at desktop and mobile widths.",
+      "Update and publish the technical walkthrough for this project."
+    ]
+  }
+}

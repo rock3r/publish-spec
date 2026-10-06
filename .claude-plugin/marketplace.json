@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "publish-spec",
+  "description": "Static HTML design specs, PRDs, and technical walkthroughs with automated responsive linting.",
+  "owner": {
+    "name": "Sebastiano Poggi",
+    "url": "https://github.com/rock3r"
+  },
+  "plugins": [
+    {
+      "name": "publish-spec",
+      "description": "Author, validate, and optionally publish static HTML design specs, PRDs, review sites, and technical walkthroughs with behavior-first structure, clear exhibits, and verified desktop/mobile layouts.",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}
