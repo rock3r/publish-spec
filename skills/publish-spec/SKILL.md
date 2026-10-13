@@ -3,7 +3,7 @@ name: publish-spec
 description: Author, validate, and optionally publish a static HTML design spec, PRD, review site, or technical walkthrough with behavior-first structure, clear exhibits, and verified desktop/mobile layouts.
 license: Apache-2.0
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   author: "Sebastiano Poggi"
 ---
 
@@ -30,6 +30,7 @@ The house style is a system, not one fixed page template:
 
 2. **Author or revise the spec:**
    - Apply the structural, editorial, visual, and responsive rules from [references/house-style.md](references/house-style.md).
+   - Set the version and add a changelog entry before every publish, following "Version and changelog" in [references/house-style.md](references/house-style.md). A revision that changes the page always gets a new version.
    - Keep the first screen legible, put the summary before long detail, ensure every visual aid and diagram works at mobile (`375px`), narrow (`768px`), and desktop (`1280px`) widths, and remove formulaic writing and design using "Avoid formulaic AI output" in [references/house-style.md](references/house-style.md). Do not score the page with a detector, and do not ask whether it sounds human.
 
 3. **Run an Impeccable design pass with the latest version:**
@@ -58,6 +59,7 @@ The house style is a system, not one fixed page template:
 5. **Publish / deploy (optional, via `references/deploy.md`):**
    - Check whether `references/deploy.md` exists in this skill directory. It is private and gitignored, so a fresh install does not have it:
      - **If `references/deploy.md` exists:** Read it completely and follow its exact deployment, registration, post-deploy verification, and security guardrails.
+     - If the target catalog or index records versions, register the same version and changelog lines that the page shows.
      - **If `references/deploy.md` does not exist:** Check if the target project has its own deployment instructions or if the user specified a target host (see [references/deploy.example.md](references/deploy.example.md) for common patterns such as GitHub Pages, Vercel, or Cloudflare). If the user only asked to write or update the spec locally, stop after Step 4 and report the local file path and verification summary.
 
 ## Guardrails
@@ -65,4 +67,5 @@ The house style is a system, not one fixed page template:
 - Never expose API tokens, secrets, or credentials in spec pages, commits, or command output.
 - Do not skip the Impeccable pass (Step 3) or publish after an Impeccable pass that ran on an outdated version.
 - Do not skip `lint-spec.mjs` or ignore mobile (`375px`) layout/diagram failures.
+- Do not publish changed content under a version that is already public.
 - Never commit private deployment configuration (`references/deploy.md`) into a public repository unless explicitly instructed by the user.

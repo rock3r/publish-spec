@@ -6,12 +6,37 @@ This file defines the visual system, document topology, and editorial rules for 
 
 A visitor must understand the subject, current state, principal decision, and next step before reaching the detailed evidence.
 
-- Lead with the outcome. Use a short title (3–7 words naming the subject or change, not a full sentence), a one-sentence purpose, status, and update date.
+- Lead with the outcome. Use a short title (3–7 words naming the subject or change, not a full sentence), a one-sentence purpose, status, version, and update date.
 - Include verbatim provenance when a spec answers a concrete request, issue, or incident. Quote the original prompt, issue, or support notes in a compact collapsible or ruled block (`Why`) rather than paraphrasing them away.
 - Put a concise executive summary before long analysis. State the problem, current answer, important limit, and next work.
 - Keep the high-level path complete on its own. Move implementation detail, history, raw evidence, and edge cases later.
 - End with an explicit **Not changing** (`Scope`) block when a spec proposes changes, listing adjacent systems, tables, or entrypoints that remain untouched.
 - End when the document is complete. Do not add a conclusion that repeats the summary.
+
+## Version and changelog
+
+Every published spec has a version and a changelog. Readers and feeds use them to see what changed since their last visit.
+
+- Use `MAJOR.MINOR`, or `MAJOR.MINOR.PATCH` for wording and typo fixes. Start at `1.0`.
+- Bump `MAJOR` when a decision, requirement, guarantee, or observable behavior changes. Bump `MINOR` when you add or clarify a section without changing a decision. Bump `PATCH` only for fixes that change no meaning.
+- Bump the version on every publish that changes the page. Never publish different content under a version that is already public.
+- Mark the version once on every entry page (each `index.html`), in the header status line, with `data-spec-version`. Show it as text too. Inner pages share their entry page's version.
+- Put the changelog near the end of the entry page, in a collapsed block with `id="changelog"`. List one entry per version, newest first. Each entry has `data-version`, the date, and one short line per change.
+- Write each change as a fact a returning reader can check: "Dropped the v1 lease API", not "Various improvements". The changelog is data, so keep the body of the spec in the present tense. Do not narrate history there.
+
+```html
+<p class="doc-meta">Proposed · <span data-spec-version="2.1">v2.1</span> · Updated <time datetime="2026-10-13">13 Oct 2026</time></p>
+<!-- … spec body … -->
+<details id="changelog">
+  <summary>Changelog</summary>
+  <ol>
+    <li data-version="2.1"><time datetime="2026-10-13">13 Oct 2026</time> v2.1: Added the iOS lease limits.</li>
+    <li data-version="2.0"><time datetime="2026-10-11">11 Oct 2026</time> v2.0: Replaced the lease daemon with file locks.</li>
+  </ol>
+</details>
+```
+
+`lint-spec.mjs` warns when an entry page has no version or declares it twice, or when the newest `#changelog` entry does not match it. It runs the same check on a deployed URL. Pass the same version and change lines to the catalog when you publish (see `deploy.md`).
 
 ## Document structure and narrative rhythm (`Why › What › How › Where`)
 
@@ -280,4 +305,5 @@ On the second pass, check only this list: participle tails, inflated copulas, ch
 3. **Behavior-first hierarchy:** Are top-level sections split by observable behavior or guarantee, and does each section lead with a concise claim paired with an exhibit?
 4. **Visuals and mobile legibility:** Did you inspect the rendered desktop (`1280px`) and mobile (`375px`) screenshots to confirm zero horizontal overflow, uncrushed text columns, and legible mockups/diagrams?
 5. **Evidence integrity:** Are measurements scoped, misses retained beside wins, and code/diff citations accurate (`path:line`, real diff hunks, `sketch` labels for unbuilt code)?
-6. **House style & anti-slop:** Does the page match the tokens, typography, header, and breakpoints in this guide, with all formulaic AI prose and decorative card grids removed?
+6. **Version and changelog:** Did you bump the version for this publish, and does the newest changelog entry match it?
+7. **House style & anti-slop:** Does the page match the tokens, typography, header, and breakpoints in this guide, with all formulaic AI prose and decorative card grids removed?

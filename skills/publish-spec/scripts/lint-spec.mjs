@@ -810,11 +810,142 @@ async function runBrowserAudit(urls, outScreenshotDir) {
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
+// ── 4. Version & changelog ────────────────────────────────────────────────────
+// A published spec declares its version once (`data-spec-version`) and keeps a changelog
+// (`id="changelog"`) with one `data-version` entry per release, newest first.
+// Comments and CDATA sections (in SVG or MathML) are text, not the page's own metadata. Code,
+// scripts, templates and form fields are skipped tag by tag in renderedTags().
+const stripNonRendered = (html) => html.replace(/<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>/g, ' ');
+
+// Start and end tags with their attributes, tokenized one attribute at a time so that text
+// inside a quoted value is never read as another attribute or tag.
+function* tags(html, from = 0) {
+  const tagStart = /<(\/?)([a-z][a-z0-9-]*)/gi;
+  tagStart.lastIndex = from;
+  for (let m = tagStart.exec(html); m; m = tagStart.exec(html)) {
+    const attributes = new Map();
+    const attribute = /\s*(?:(\/?>)|([^\s"'>\/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?|\/)/y;
+    attribute.lastIndex = tagStart.lastIndex;
+    let end = -1;
+    for (let a = attribute.exec(html); a && a[0] !== ''; a = attribute.exec(html)) {
+      if (a[1]) {
+        end = attribute.lastIndex;
+        break;
+      }
+      if (a[2]) {
+        const name = a[2].toLowerCase();
+        if (!attributes.has(name)) attributes.set(name, a[3] ?? a[4] ?? a[5] ?? '');
+      }
+    }
+    if (end < 0) continue;
+    yield { closing: m[1] === '/', name: m[2].toLowerCase(), index: m.index, end, attributes };
+    tagStart.lastIndex = end;
+  }
+}
+
+// Tags that browsers render as elements, skipping where markup examples live. The HTML parser
+// reads the content of raw-text and RCDATA elements as text up to their own closing tag
+// (noscript too, with scripting on; plaintext runs to the end of the page), so that content is
+// jumped over without parsing. pre, code and template are skipped with nesting.
+const RAW_TEXT = new Set([
+  'script', 'style', 'textarea', 'title', 'iframe', 'noembed', 'noframes', 'noscript', 'xmp', 'plaintext',
+]);
+const SKIPPED = new Set(['pre', 'code', 'template']);
+function* renderedTags(html) {
+  const skipping = [];
+  let from = 0;
+  restart: for (;;) {
+    for (const tag of tags(html, from)) {
+      if (!tag.closing && RAW_TEXT.has(tag.name)) {
+        if (tag.name === 'plaintext') return;
+        const close = new RegExp(`</${tag.name}[\\s/>]`, 'gi');
+        close.lastIndex = tag.end;
+        const found = close.exec(html);
+        if (!found) return;
+        from = found.index + 2;
+        continue restart;
+      }
+      if (skipping.length) {
+        if (tag.name === skipping.at(-1)) tag.closing ? skipping.pop() : skipping.push(tag.name);
+        continue;
+      }
+      if (!tag.closing && SKIPPED.has(tag.name)) {
+        skipping.push(tag.name);
+        continue;
+      }
+      yield tag;
+    }
+    return;
+  }
+}
+
+const attributeValues = (html, name) =>
+  [...renderedTags(html)].filter((tag) => !tag.closing && tag.attributes.has(name)).map((tag) => tag.attributes.get(name));
+
+// Returns the inner HTML of the element whose id attribute is "changelog", following nested
+// tags of the same name.
+const VOID_ELEMENTS = new Set([
+  'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr',
+]);
+
+function changelogBody(html) {
+  let open = null;
+  let depth = 0;
+  for (const tag of renderedTags(html)) {
+    if (!open) {
+      if (!tag.closing && tag.attributes.get('id') === 'changelog') {
+        if (VOID_ELEMENTS.has(tag.name)) return '';
+        open = tag;
+        depth = 1;
+      }
+      continue;
+    }
+    if (tag.name !== open.name) continue;
+    depth += tag.closing ? -1 : 1;
+    if (depth === 0) return html.slice(open.end, tag.index);
+  }
+  return open ? html.slice(open.end) : null;
+}
+
+function lintVersioning(pages) {
+  for (const { rel, html: raw } of pages) {
+    const html = stripNonRendered(raw);
+    const declarations = attributeValues(html, 'data-spec-version');
+    if (declarations.length === 0) {
+      warn(rel, 'No data-spec-version on this entry page. Mark the version and add a changelog (house style: "Version and changelog").');
+      continue;
+    }
+    if (declarations.length > 1) {
+      warn(rel, `Declares data-spec-version ${declarations.length} times (${declarations.map((v) => `v${v}`).join(', ')}). Mark the version once.`);
+    }
+    const version = declarations[0];
+    if (!/^\d+\.\d+(?:\.\d+)?$/.test(version)) {
+      warn(rel, `data-spec-version="${version}" is not MAJOR.MINOR or MAJOR.MINOR.PATCH.`);
+    }
+    const changelog = changelogBody(html);
+    if (changelog === null) {
+      warn(rel, `Declares v${version} but has no changelog (id="changelog").`);
+      continue;
+    }
+    const entries = attributeValues(changelog, 'data-version');
+    if (entries[0] !== version) {
+      warn(rel, `The newest changelog entry is ${entries[0] ? `v${entries[0]}` : 'missing'}, but the page declares v${version}. Add the entry first in the list.`);
+    }
+  }
+}
+
 async function main() {
   const isUrl = /^https?:\/\//i.test(target);
 
   if (isUrl) {
     info('target', `Auditing live URL: ${target}`);
+    try {
+      const response = await fetch(target, { signal: AbortSignal.timeout(15000) });
+      if (!response.ok) err('target', `GET ${target} returned ${response.status}.`);
+      else lintVersioning([{ rel: target, html: await response.text() }]);
+    } catch (e) {
+      err('target', `Could not fetch ${target}: ${e.message}`);
+    }
     if (!staticOnly) {
       await runBrowserAudit([{ url: target, label: target }], screenshotDir);
     }
@@ -845,6 +976,11 @@ async function main() {
         lintCssContent(inlineStyles, `${relative(assetRoot, f) || basename(f)} <style>`);
       }
     }
+
+    const entryPages = statSync(resolved).isFile() ? [resolved] : htmlFiles.filter((f) => basename(f) === 'index.html');
+    lintVersioning(
+      entryPages.map((f) => ({ rel: relative(assetRoot, f) || basename(f), html: readFileSync(f, 'utf8') })),
+    );
 
     for (const c of cssFiles) {
       const rel = relative(assetRoot, c) || basename(c);
