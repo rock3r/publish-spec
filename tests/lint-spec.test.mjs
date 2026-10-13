@@ -2,7 +2,9 @@
 // The browser checks need headless Chrome and a local server, so CI skips them.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+import { createServer } from 'node:http';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -56,12 +58,12 @@ test('a version without a matching newest changelog entry warns', () => {
 
 test('a page with no version warns', () => {
   const { out } = lint('leftovers');
-  assert.match(out, /No page declares data-spec-version/);
+  assert.match(out, /No data-spec-version on this entry page/);
 });
 
 test('version markup inside code examples and comments does not count', () => {
   const { out } = lint('version-in-example');
-  assert.match(out, /No page declares data-spec-version/);
+  assert.match(out, /No data-spec-version on this entry page/);
 });
 
 test('a second version declaration warns, and data-version outside the changelog is ignored', () => {
@@ -73,4 +75,30 @@ test('a second version declaration warns, and data-version outside the changelog
 test('an empty changelog fails even when another element carries the version', () => {
   const { out } = lint('version-widget');
   assert.match(out, /newest changelog entry is missing, but the page declares v1\.1/);
+});
+
+test('every index.html entry page needs a version; other pages do not', () => {
+  const { out } = lint('version-pages');
+  assert.match(out, /guide\/index\.html\] No data-spec-version on this entry page/);
+  assert.doesNotMatch(out, /walkthrough\.html\] No data-spec-version/);
+  assert.doesNotMatch(out, /\[index\.html\] No data-spec-version/);
+});
+
+test('a deployed URL gets the version checks too', async () => {
+  const page = readFileSync(join(here, 'fixtures', 'stale-changelog', 'index.html'));
+  const server = createServer((_req, res) => res.end(page));
+  await new Promise((done) => server.listen(0, '127.0.0.1', done));
+  try {
+    const url = `http://127.0.0.1:${server.address().port}/`;
+    const out = await new Promise((done) => {
+      const child = spawn(process.execPath, [linter, url, '--static-only']);
+      let text = '';
+      child.stdout.on('data', (chunk) => (text += chunk));
+      child.stderr.on('data', (chunk) => (text += chunk));
+      child.on('close', () => done(text));
+    });
+    assert.match(out, /newest changelog entry is v1\.1, but the page declares v1\.2/);
+  } finally {
+    server.close();
+  }
 });

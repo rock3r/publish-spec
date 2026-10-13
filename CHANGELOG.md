@@ -13,8 +13,8 @@ workflow publishes the section as the release notes.
   decision, requirement, guarantee, or behavior. `MINOR` is for an added or
   clarified section. `PATCH` is for wording and typo fixes. Every publish that
   changes the page gets a new version.
-- `lint-spec.mjs` warns when no page declares a version, when a page declares
-  it more than once, when the version is not `MAJOR.MINOR` or
+- `lint-spec.mjs` warns when an entry page (each `index.html`, or a deployed
+  URL) has no version, when a page declares it more than once, when the version is not `MAJOR.MINOR` or
   `MAJOR.MINOR.PATCH`, or when the newest entry inside `#changelog` does not
   match it. Markup examples in code blocks and comments do not count.
 - When a catalog records versions, the skill registers the same version and

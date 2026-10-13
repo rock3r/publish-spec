@@ -834,19 +834,16 @@ function changelogBody(html) {
   return html.slice(open.index + open[0].length);
 }
 
-function lintVersioning(htmlFiles, rootDir) {
-  const versioned = htmlFiles
-    .map((f) => ({ rel: relative(rootDir, f) || basename(f), html: stripNonRendered(readFileSync(f, 'utf8')) }))
-    .map((page) => ({
-      ...page,
-      declarations: [...page.html.matchAll(/\bdata-spec-version=["']([^"']+)["']/gi)].map((m) => m[1]),
-    }))
-    .filter((page) => page.declarations.length > 0);
-  if (versioned.length === 0) {
-    warn('target', 'No page declares data-spec-version. Mark the version on the entry page and add a changelog (house style: "Version and changelog").');
-    return;
-  }
-  for (const { rel, html, declarations } of versioned) {
+// Every entry page (an index.html, the single file target, or a deployed URL) carries the
+// version. Inner pages share their entry page's version and are not checked.
+function lintVersioning(pages) {
+  for (const { rel, html: raw } of pages) {
+    const html = stripNonRendered(raw);
+    const declarations = [...html.matchAll(/\bdata-spec-version=["']([^"']+)["']/gi)].map((m) => m[1]);
+    if (declarations.length === 0) {
+      warn(rel, 'No data-spec-version on this entry page. Mark the version and add a changelog (house style: "Version and changelog").');
+      continue;
+    }
     if (declarations.length > 1) {
       warn(rel, `Declares data-spec-version ${declarations.length} times (${declarations.map((v) => `v${v}`).join(', ')}). Mark the version once.`);
     }
@@ -871,6 +868,13 @@ async function main() {
 
   if (isUrl) {
     info('target', `Auditing live URL: ${target}`);
+    try {
+      const response = await fetch(target);
+      if (!response.ok) err('target', `GET ${target} returned ${response.status}.`);
+      else lintVersioning([{ rel: target, html: await response.text() }]);
+    } catch (e) {
+      err('target', `Could not fetch ${target}: ${e.message}`);
+    }
     if (!staticOnly) {
       await runBrowserAudit([{ url: target, label: target }], screenshotDir);
     }
@@ -902,7 +906,10 @@ async function main() {
       }
     }
 
-    if (htmlFiles.length > 0) lintVersioning(htmlFiles, assetRoot);
+    const entryPages = statSync(resolved).isFile() ? [resolved] : htmlFiles.filter((f) => basename(f) === 'index.html');
+    lintVersioning(
+      entryPages.map((f) => ({ rel: relative(assetRoot, f) || basename(f), html: readFileSync(f, 'utf8') })),
+    );
 
     for (const c of cssFiles) {
       const rel = relative(assetRoot, c) || basename(c);
