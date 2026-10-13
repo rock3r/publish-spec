@@ -819,6 +819,13 @@ const stripNonRendered = (html) =>
     .replace(/<!--[\s\S]*?-->/g, ' ')
     .replace(/<(pre|code|script|style|template|textarea)\b[\s\S]*?<\/\1>/gi, ' ');
 
+// Values of one attribute, read only from real start tags, never from text that mentions it.
+const attributeValues = (html, name) =>
+  [...html.matchAll(/<[a-z][a-z0-9-]*((?:\s+[^\s>]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?)*)\s*\/?>/gi)].flatMap((tag) => {
+    const attr = new RegExp(`(?:^|\\s)${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i').exec(tag[1]);
+    return attr ? [attr[1] ?? attr[2] ?? attr[3]] : [];
+  });
+
 // Returns the inner HTML of the element with id="changelog", following nested tags of the same name.
 function changelogBody(html) {
   const open = /<([a-z][a-z0-9-]*)\b[^>]*?\sid=["']changelog["'][^>]*>/i.exec(html);
@@ -839,7 +846,7 @@ function changelogBody(html) {
 function lintVersioning(pages) {
   for (const { rel, html: raw } of pages) {
     const html = stripNonRendered(raw);
-    const declarations = [...html.matchAll(/\sdata-spec-version=["']([^"']+)["']/gi)].map((m) => m[1]);
+    const declarations = attributeValues(html, 'data-spec-version');
     if (declarations.length === 0) {
       warn(rel, 'No data-spec-version on this entry page. Mark the version and add a changelog (house style: "Version and changelog").');
       continue;
@@ -856,7 +863,7 @@ function lintVersioning(pages) {
       warn(rel, `Declares v${version} but has no changelog (id="changelog").`);
       continue;
     }
-    const entries = [...changelog.matchAll(/\sdata-version=["']([^"']+)["']/gi)].map((m) => m[1]);
+    const entries = attributeValues(changelog, 'data-version');
     if (entries[0] !== version) {
       warn(rel, `The newest changelog entry is ${entries[0] ? `v${entries[0]}` : 'missing'}, but the page declares v${version}. Add the entry first in the list.`);
     }
