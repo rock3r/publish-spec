@@ -147,3 +147,7 @@ test('plaintext runs to the end of the page', () => {
 test('a void element with id="changelog" has no entries', () => {
   assert.match(lint('changelog-void').out, /newest changelog entry is missing, but the page declares v1\.1/);
 });
+
+test('markup inside SVG CDATA is text', () => {
+  assert.match(lint('version-cdata').out, /No data-spec-version on this entry page/);
+});

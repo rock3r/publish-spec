@@ -813,9 +813,9 @@ async function runBrowserAudit(urls, outScreenshotDir) {
 // ── 4. Version & changelog ────────────────────────────────────────────────────
 // A published spec declares its version once (`data-spec-version`) and keeps a changelog
 // (`id="changelog"`) with one `data-version` entry per release, newest first.
-// Comments are not the page's own metadata. Code, scripts, templates and form fields are
-// skipped tag by tag in renderedTags().
-const stripNonRendered = (html) => html.replace(/<!--[\s\S]*?-->/g, ' ');
+// Comments and CDATA sections (in SVG or MathML) are text, not the page's own metadata. Code,
+// scripts, templates and form fields are skipped tag by tag in renderedTags().
+const stripNonRendered = (html) => html.replace(/<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>/g, ' ');
 
 // Start and end tags with their attributes, tokenized one attribute at a time so that text
 // inside a quoted value is never read as another attribute or tag.
