@@ -813,16 +813,14 @@ async function runBrowserAudit(urls, outScreenshotDir) {
 // ── 4. Version & changelog ────────────────────────────────────────────────────
 // A published spec declares its version once (`data-spec-version`) and keeps a changelog
 // (`id="changelog"`) with one `data-version` entry per release, newest first.
-// Markup examples in code, scripts, templates and comments are not the page's own metadata.
-const stripNonRendered = (html) =>
-  html
-    .replace(/<!--[\s\S]*?-->/g, ' ')
-    .replace(/<(pre|code|script|style|template|textarea)\b[\s\S]*?<\/\1>/gi, ' ');
+// Comments are not the page's own metadata. Code, scripts, templates and form fields are
+// skipped tag by tag in renderedTags().
+const stripNonRendered = (html) => html.replace(/<!--[\s\S]*?-->/g, ' ');
 
-// Start tags with their attributes, tokenized one attribute at a time so that text inside a
-// quoted value is never read as another attribute.
-function* startTags(html) {
-  const tagStart = /<([a-z][a-z0-9-]*)/gi;
+// Start and end tags with their attributes, tokenized one attribute at a time so that text
+// inside a quoted value is never read as another attribute or tag.
+function* tags(html) {
+  const tagStart = /<(\/?)([a-z][a-z0-9-]*)/gi;
   for (let m = tagStart.exec(html); m; m = tagStart.exec(html)) {
     const attributes = new Map();
     const attribute = /\s*(?:(\/?>)|([^\s"'>\/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?|\/)/y;
@@ -839,27 +837,49 @@ function* startTags(html) {
       }
     }
     if (end < 0) continue;
-    yield { name: m[1].toLowerCase(), index: m.index, end, attributes };
+    yield { closing: m[1] === '/', name: m[2].toLowerCase(), index: m.index, end, attributes };
     tagStart.lastIndex = end;
   }
 }
 
+// Tags outside pre, code, script, style, template and textarea, where markup examples live.
+const NOT_RENDERED = new Set(['pre', 'code', 'script', 'style', 'template', 'textarea']);
+function* renderedTags(html) {
+  const skipping = [];
+  for (const tag of tags(html)) {
+    if (skipping.length) {
+      if (tag.name === skipping.at(-1)) tag.closing ? skipping.pop() : skipping.push(tag.name);
+      continue;
+    }
+    if (!tag.closing && NOT_RENDERED.has(tag.name)) {
+      skipping.push(tag.name);
+      continue;
+    }
+    yield tag;
+  }
+}
+
 const attributeValues = (html, name) =>
-  [...startTags(html)].filter((tag) => tag.attributes.has(name)).map((tag) => tag.attributes.get(name));
+  [...renderedTags(html)].filter((tag) => !tag.closing && tag.attributes.has(name)).map((tag) => tag.attributes.get(name));
 
 // Returns the inner HTML of the element whose id attribute is "changelog", following nested
 // tags of the same name.
 function changelogBody(html) {
-  const open = [...startTags(html)].find((tag) => tag.attributes.get('id') === 'changelog');
-  if (!open) return null;
-  const pattern = new RegExp(`<(/?)${open.name}\\b[^>]*>`, 'gi');
-  pattern.lastIndex = open.end;
-  let depth = 1;
-  for (let m = pattern.exec(html); m; m = pattern.exec(html)) {
-    depth += m[1] ? -1 : 1;
-    if (depth === 0) return html.slice(open.end, m.index);
+  let open = null;
+  let depth = 0;
+  for (const tag of renderedTags(html)) {
+    if (!open) {
+      if (!tag.closing && tag.attributes.get('id') === 'changelog') {
+        open = tag;
+        depth = 1;
+      }
+      continue;
+    }
+    if (tag.name !== open.name) continue;
+    depth += tag.closing ? -1 : 1;
+    if (depth === 0) return html.slice(open.end, tag.index);
   }
-  return html.slice(open.end);
+  return open ? html.slice(open.end) : null;
 }
 
 function lintVersioning(pages) {

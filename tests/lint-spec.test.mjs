@@ -121,3 +121,12 @@ test('metadata syntax inside another attribute value does not count', () => {
   assert.match(lint('version-in-attribute').out, /No data-spec-version on this entry page/);
   assert.match(lint('changelog-id-in-attribute').out, /Declares v1\.1 but has no changelog/);
 });
+
+test('tag syntax inside a quoted value does not end or nest the changelog', () => {
+  const { code, out } = lint('changelog-quoted-tag', '--strict');
+  assert.equal(code, 0, out);
+});
+
+test('a quoted </pre> does not end a code example early', () => {
+  assert.match(lint('version-quoted-pre').out, /No data-spec-version on this entry page/);
+});
