@@ -3,7 +3,7 @@ name: publish-spec
 description: Author, validate, and optionally publish a static HTML design spec, PRD, review site, or technical walkthrough with behavior-first structure, clear exhibits, and verified desktop/mobile layouts.
 license: Apache-2.0
 metadata:
-  version: "1.2.0"
+  version: "1.2.1"
   author: "Sebastiano Poggi"
 ---
 

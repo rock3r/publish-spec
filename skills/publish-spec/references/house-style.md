@@ -20,7 +20,7 @@ Every published spec has a version and a changelog. Readers and feeds use them t
 - Use `MAJOR.MINOR`, or `MAJOR.MINOR.PATCH` for wording and typo fixes. Start at `1.0`.
 - Bump `MAJOR` when a decision, requirement, guarantee, or observable behavior changes. Bump `MINOR` when you add or clarify a section without changing a decision. Bump `PATCH` only for fixes that change no meaning.
 - Bump the version on every publish that changes the page. Never publish different content under a version that is already public.
-- Mark the version once on every entry page (each `index.html`), in the header status line, with `data-spec-version`. Show it as text too. Inner pages share their entry page's version.
+- Mark the version once on every entry page (each `index.html`, or the single file you lint directly), in the header status line, with `data-spec-version`. Show it as text too. Inner pages share their entry page's version.
 - Put the changelog near the end of the entry page, in a collapsed block with `id="changelog"`. List one entry per version, newest first. Each entry has `data-version`, the date, and one short line per change.
 - Write each change as a fact a returning reader can check: "Dropped the v1 lease API", not "Various improvements". The changelog is data, so keep the body of the spec in the present tense. Do not narrate history there.
 
@@ -36,7 +36,7 @@ Every published spec has a version and a changelog. Readers and feeds use them t
 </details>
 ```
 
-`lint-spec.mjs` warns when an entry page has no version or declares it twice, or when the newest `#changelog` entry does not match it. It runs the same check on a deployed URL. Pass the same version and change lines to the catalog when you publish (see `deploy.md`).
+`lint-spec.mjs` warns when an entry page has no version or declares it twice, when the newest `#changelog` entry does not match it, when the changelog repeats a version or is out of order, or when it is never closed. It runs the same check on a deployed URL. Pass the same version and change lines to the catalog when you publish (see `deploy.md`).
 
 ## Document structure and narrative rhythm (`Why › What › How › Where`)
 
