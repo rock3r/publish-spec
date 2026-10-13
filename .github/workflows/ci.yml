@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Linter tests and version check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Check script syntax
+        run: node --check skills/publish-spec/scripts/lint-spec.mjs
+      - name: Run tests
+        run: node --test tests/*.test.mjs
+
+  markdown:
+    name: Markdown lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: Install rumdl
+        run: pip install rumdl==0.2.74
+      - name: Run rumdl
+        run: rumdl check .

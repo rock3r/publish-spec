@@ -1,0 +1,3 @@
+[global]
+# Prose wraps naturally in this repository, so line length is not checked.
+disable = ["MD013"]

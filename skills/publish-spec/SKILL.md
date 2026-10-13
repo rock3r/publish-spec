@@ -56,7 +56,7 @@ The house style is a system, not one fixed page template:
    - Also run the source project's own validation or local link checks when they exist.
 
 5. **Publish / deploy (optional, via `references/deploy.md`):**
-   - Check whether [references/deploy.md](references/deploy.md) exists in this skill directory:
+   - Check whether `references/deploy.md` exists in this skill directory. It is private and gitignored, so a fresh install does not have it:
      - **If `references/deploy.md` exists:** Read it completely and follow its exact deployment, registration, post-deploy verification, and security guardrails.
      - **If `references/deploy.md` does not exist:** Check if the target project has its own deployment instructions or if the user specified a target host (see [references/deploy.example.md](references/deploy.example.md) for common patterns such as GitHub Pages, Vercel, or Cloudflare). If the user only asked to write or update the spec locally, stop after Step 4 and report the local file path and verification summary.
 

@@ -196,6 +196,7 @@ Every spec must work cleanly at **desktop (`1280px`)**, **narrow/tablet (`768px`
    - Apply `overflow-wrap: anywhere` to cells or headings that can contain long identifiers, file paths, or URLs.
 4. **Horizontal scroll containment for wide tables, matrices, and diagrams:**
    - Wide tables (`.proof-matrix`) and wide SVGs/diagrams (`.dispatch-flow`) must sit inside a dedicated scroll wrapper:
+
      ```css
      .matrix-scroll,
      .diagram-scroll {
@@ -209,6 +210,7 @@ Every spec must work cleanly at **desktop (`1280px`)**, **narrow/tablet (`768px`
        -webkit-overflow-scrolling: touch;
      }
      ```
+
    - Never put `min-width: 720px` on an element unless its immediate parent has `overflow-x: auto` and `max-width: 100%`.
    - `<pre>` blocks must have `max-width: 100%; overflow-x: auto;`. Below `680px`, if a `.copy-button` sits in the top-right corner of `<pre>`, add `padding-top: 56px; padding-right: 18px` so the button never overlaps the first line of code.
 5. **Use `1px` rules, spacing, and type before reaching for containers:**

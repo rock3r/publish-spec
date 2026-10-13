@@ -9,6 +9,7 @@ Every deployment flow starts from a spec that has passed the Impeccable pass (St
 1. Place the validated static spec files under `<repo>/docs/specs/<slug>/` (or a dedicated specs repository).
 2. Update the root `index.html` catalog list with the title, date, and relative link.
 3. Commit and push to `main`, then verify `https://<org>.github.io/<repo>/specs/<slug>/` with:
+
    ```bash
    node <skill-dir>/scripts/lint-spec.mjs https://<org>.github.io/<repo>/specs/<slug>/
    ```
@@ -16,10 +17,13 @@ Every deployment flow starts from a spec that has passed the Impeccable pass (St
 ## Example B: Vercel
 
 1. From the spec directory, run a preview or production deployment:
+
    ```bash
    npx vercel deploy --prod --yes
    ```
+
 2. Capture the canonical alias URL and verify it at desktop, narrow, and mobile widths:
+
    ```bash
    node <skill-dir>/scripts/lint-spec.mjs <deployed-url>
    ```
@@ -28,8 +32,10 @@ Every deployment flow starts from a spec that has passed the Impeccable pass (St
 
 1. Ensure `wrangler.jsonc` or `wrangler.toml` configures static assets (`assets.directory`).
 2. Dry-run and deploy:
+
    ```bash
    npx wrangler@latest deploy --dry-run
    npx wrangler@latest deploy
    ```
+
 3. Verify the deployed route with `lint-spec.mjs`.
