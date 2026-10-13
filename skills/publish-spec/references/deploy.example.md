@@ -2,6 +2,8 @@
 
 Copy this file to `references/deploy.md` to configure how `publish-spec` deploys specs in your environment. If `references/deploy.md` is omitted, the skill authors and validates the static HTML spec locally without deploying.
 
+Every deployment flow starts from a spec that has passed the Impeccable pass (Step 3 in `SKILL.md`, latest Impeccable version) and `lint-spec.mjs` (Step 4). Keep that rule in your own `deploy.md`. If you edit the spec during deployment, run both again.
+
 ## Example A: GitHub Pages (`gh-pages` branch or `/docs`)
 
 1. Place the validated static spec files under `<repo>/docs/specs/<slug>/` (or a dedicated specs repository).
