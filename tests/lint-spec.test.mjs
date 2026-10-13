@@ -102,3 +102,8 @@ test('a deployed URL gets the version checks too', async () => {
     server.close();
   }
 });
+
+test('data-id="changelog" is not the changelog', () => {
+  const { code, out } = lint('version-data-id', '--strict');
+  assert.equal(code, 0, out);
+});

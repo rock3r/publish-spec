@@ -821,7 +821,7 @@ const stripNonRendered = (html) =>
 
 // Returns the inner HTML of the element with id="changelog", following nested tags of the same name.
 function changelogBody(html) {
-  const open = /<([a-z][a-z0-9-]*)\b[^>]*\bid=["']changelog["'][^>]*>/i.exec(html);
+  const open = /<([a-z][a-z0-9-]*)\b[^>]*?\sid=["']changelog["'][^>]*>/i.exec(html);
   if (!open) return null;
   const tag = open[1].toLowerCase();
   const pattern = new RegExp(`<(/?)${tag}\\b[^>]*>`, 'gi');
@@ -869,7 +869,7 @@ async function main() {
   if (isUrl) {
     info('target', `Auditing live URL: ${target}`);
     try {
-      const response = await fetch(target);
+      const response = await fetch(target, { signal: AbortSignal.timeout(15000) });
       if (!response.ok) err('target', `GET ${target} returned ${response.status}.`);
       else lintVersioning([{ rel: target, html: await response.text() }]);
     } catch (e) {
