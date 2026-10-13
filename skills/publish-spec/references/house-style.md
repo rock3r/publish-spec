@@ -250,12 +250,16 @@ These are structural misses, not a word list. Swapping a banned word for a synon
 - Delete canned openings ("In today's rapidly evolving landscape"), generic scene-setting, and inflated metaphors (delve, tapestry, realm, journey, unlock, transformative, pivotal, testament) unless that word is the precise term.
 - Do not cite vague authority ("experts agree"), add generic praise, invent quotations, or assure the reader that the document is clear, complete, or well-researched.
 - Vary sentence length. Do not make every sentence equally long or equally formal.
+- Apply the portability test. If a sentence could move unchanged into another project's spec, it says nothing about this one. Replace it with the fact only this project has, or cut it.
+- Do not invent specifics. Every name, number, measurement, and example must be real and traceable. If you have no real figure, say what is unknown. Do not make one up to sound concrete. Label a hypothetical example as one.
+- Do not tell the reader how to read the text ("that last point matters more than it sounds", "this is the important part"). Show why it matters with the fact or the exhibit, or cut the aside.
+- Remove generation leftovers: citation markers (`oaicite`, `contentReference`, a bare `[1]` with no source) and placeholders (`[Your Name]`, `[insert statistic]`, `XX%`). `lint-spec.mjs` reports these.
 
 Bad: "The cache serves as a pivotal layer, ensuring low latency and highlighting the system's scalability."
 
 Good: "The cache skips reads it has already answered. Put the measured change next to the trace it came from."
 
-On the second pass, check only this list: participle tails, inflated copulas, chatbot openers, synonym triads, "not X but Y", a repeated ending, a claim with no source, a data table written as prose. One banned word is a warning. A page full of them is a failure. Do not ask whether the page "sounds human".
+On the second pass, check only this list: participle tails, inflated copulas, chatbot openers, synonym triads, "not X but Y", a repeated ending, a claim with no source, a sentence that fails the portability test, an invented specific, an interpretive aside, a data table written as prose. One banned word is a warning. A page full of them is a failure. Do not ask whether the page "sounds human".
 
 ### Design
 
@@ -268,6 +272,7 @@ On the second pass, check only this list: participle tails, inflated copulas, ch
 
 ## Review before publishing
 
+0. **Impeccable pass:** Did you run `/impeccable polish` on every entry page with the latest published Impeccable version (Step 3 in `SKILL.md`), and keep the copy and structure intact?
 1. **Automated lint & viewport check:** Did `node <skill-dir>/scripts/lint-spec.mjs` pass with zero errors across static checks and headless browser layout checks at `1280px`, `768px`, and `375px`?
 2. **Summary completeness:** Can a reader state the problem, current answer, limit, and next work after the summary?
 3. **Behavior-first hierarchy:** Are top-level sections split by observable behavior or guarantee, and does each section lead with a concise claim paired with an exhibit?

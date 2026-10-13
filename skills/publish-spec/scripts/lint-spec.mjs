@@ -227,6 +227,22 @@ function lintHtmlFile(filePath, rootDir) {
     }
   }
 
+  // Generation leftovers: citation debris and unfilled placeholders
+  const debris = html.match(/oaicite|contentReference|turn\d+(?:search|news|view|fetch)\d+|【\d+[^】]*】/i);
+  if (debris) {
+    err(rel, `Line ${lineOf(html, debris.index)}: citation debris ("${debris[0]}") — remove it and recheck the claim it was attached to.`);
+  }
+  const footnoteMarks = bareProse.match(/[a-z.,;:)](?:\[\d{1,2}\])+(?=[\s.,;:)]|$)/gi);
+  if (footnoteMarks) {
+    warn(rel, `Bare citation markers in prose (${footnoteMarks.slice(0, 4).map((x) => `"${x.slice(1)}"`).join(', ')}) — link the source or remove the marker.`);
+  }
+  const placeholders = bareProse.match(
+    /\[(?:your|insert|add|company|product|name|date|link|url|source|statistic|placeholder)\b[^\]]{0,40}\]|\bXX+(?:\.X+)?\s?%|\blorem ipsum\b/gi
+  );
+  if (placeholders) {
+    err(rel, `Unfilled placeholders (${placeholders.slice(0, 4).map((x) => `"${x}"`).join(', ')}) — fill them in or cut the sentence.`);
+  }
+
   const passiveHits = [
     ...new Set(
       lowerProse.match(

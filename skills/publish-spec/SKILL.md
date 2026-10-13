@@ -3,7 +3,7 @@ name: publish-spec
 description: Author, validate, and optionally publish a static HTML design spec, PRD, review site, or technical walkthrough with behavior-first structure, clear exhibits, and verified desktop/mobile layouts.
 license: Apache-2.0
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   author: "Sebastiano Poggi"
 ---
 
@@ -32,7 +32,19 @@ The house style is a system, not one fixed page template:
    - Apply the structural, editorial, visual, and responsive rules from [references/house-style.md](references/house-style.md).
    - Keep the first screen legible, put the summary before long detail, ensure every visual aid and diagram works at mobile (`375px`), narrow (`768px`), and desktop (`1280px`) widths, and remove formulaic writing and design using "Avoid formulaic AI output" in [references/house-style.md](references/house-style.md). Do not score the page with a detector, and do not ask whether it sounds human.
 
-3. **Run automated static + headless-browser validation:**
+3. **Run an Impeccable design pass with the latest version:**
+   - Update Impeccable to the latest published version first, from the spec directory:
+
+     ```bash
+     npx impeccable@latest update
+     ```
+
+   - Load the `impeccable` skill and run its Setup with the spec entry page as `--target`. If its context output still reports `UPDATE_AVAILABLE`, the update did not apply. Fix that before you continue. Do not run the pass on an old version.
+   - Run `/impeccable polish <entry page>` on every served entry page. A spec is a **Read** surface, and this pass is a refinement, not a redesign.
+   - Keep the spec's copy, section order, claims, and exhibits. When an Impeccable suggestion conflicts with [references/house-style.md](references/house-style.md), the house style wins.
+   - Do this pass before every publish and before you call an HTML spec final, including revisions.
+
+4. **Run automated static + headless-browser validation:**
    - Run the bundled linter from the spec directory before finishing or deploying:
 
      ```bash
@@ -43,13 +55,14 @@ The house style is a system, not one fixed page template:
    - Fix every reported error, address warnings, and visually inspect the generated desktop (`1280px`) and mobile (`375px`) screenshots in `/tmp/spec-shots`.
    - Also run the source project's own validation or local link checks when they exist.
 
-4. **Publish / deploy (optional, via `references/deploy.md`):**
+5. **Publish / deploy (optional, via `references/deploy.md`):**
    - Check whether [references/deploy.md](references/deploy.md) exists in this skill directory:
      - **If `references/deploy.md` exists:** Read it completely and follow its exact deployment, registration, post-deploy verification, and security guardrails.
-     - **If `references/deploy.md` does not exist:** Check if the target project has its own deployment instructions or if the user specified a target host (see [references/deploy.example.md](references/deploy.example.md) for common patterns such as GitHub Pages, Vercel, or Cloudflare). If the user only asked to write or update the spec locally, stop after Step 3 and report the local file path and verification summary.
+     - **If `references/deploy.md` does not exist:** Check if the target project has its own deployment instructions or if the user specified a target host (see [references/deploy.example.md](references/deploy.example.md) for common patterns such as GitHub Pages, Vercel, or Cloudflare). If the user only asked to write or update the spec locally, stop after Step 4 and report the local file path and verification summary.
 
 ## Guardrails
 
 - Never expose API tokens, secrets, or credentials in spec pages, commits, or command output.
+- Do not skip the Impeccable pass (Step 3) or publish after an Impeccable pass that ran on an outdated version.
 - Do not skip `lint-spec.mjs` or ignore mobile (`375px`) layout/diagram failures.
 - Never commit private deployment configuration (`references/deploy.md`) into a public repository unless explicitly instructed by the user.
