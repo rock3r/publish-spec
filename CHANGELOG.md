@@ -12,10 +12,11 @@ workflow publishes the section as the release notes.
 - The check also warns when the changelog repeats a version, lists versions
   out of order, or is never closed. An unclosed changelog used to swallow the
   rest of the page.
-- Linting a single file treats that file as an entry page, and the house style
-  now says so.
-- A deployed URL that fails to load is an error, and the browser audit is
-  skipped for it.
+- Browser-recovered comment forms (`<!-->`, `<!--->`, `--!>`) and an unclosed
+  `<![CDATA[` in HTML content no longer stop the check.
+- The house style now says that a single file you lint directly counts as an
+  entry page, which is how the linter already behaved.
+- When a deployed URL fails to load, the browser audit is skipped for it.
 
 ## 1.2.0
 

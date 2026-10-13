@@ -823,10 +823,26 @@ function* tags(html, from = 0) {
   const tagStart = /<(?:(!--)|(!\[CDATA\[)|(\/?)([a-z][a-z0-9-]*))/gi;
   tagStart.lastIndex = from;
   for (let m = tagStart.exec(html); m; m = tagStart.exec(html)) {
-    if (m[1] || m[2]) {
-      const close = html.indexOf(m[1] ? '-->' : ']]>', tagStart.lastIndex);
+    if (m[1]) {
+      // Browsers recover from <!--> and <!---> as empty comments and accept --!> as a close.
+      const rest = html.slice(tagStart.lastIndex);
+      const empty = /^-?>/.exec(rest);
+      const close = empty ? null : /--!?>/.exec(rest);
+      if (!empty && !close) return;
+      tagStart.lastIndex += empty ? empty[0].length : close.index + close[0].length;
+      continue;
+    }
+    if (m[2]) {
+      // In SVG or MathML a CDATA section ends at ]]>. In HTML content it is a bogus comment that
+      // ends at the first >. Without ]]>, fall back to > rather than dropping the rest of the page.
+      let close = html.indexOf(']]>', tagStart.lastIndex);
+      let length = 3;
+      if (close < 0) {
+        close = html.indexOf('>', tagStart.lastIndex);
+        length = 1;
+      }
       if (close < 0) return;
-      tagStart.lastIndex = close + 3;
+      tagStart.lastIndex = close + length;
       continue;
     }
     const attributes = new Map();
@@ -948,7 +964,9 @@ function lintVersioning(pages) {
     if (entries[0] !== version) {
       warn(rel, `The newest changelog entry is ${entries[0] ? `v${entries[0]}` : 'missing'}, but the page declares v${version}. Add the entry first in the list.`);
     }
-    const repeated = entries.filter((entry, i) => entries.indexOf(entry) !== i);
+    // 1.1 and 1.1.0 are the same version.
+    const same = (a, b) => a === b || (/^\d+\.\d+(?:\.\d+)?$/.test(a) && /^\d+\.\d+(?:\.\d+)?$/.test(b) && compareVersions(a, b) === 0);
+    const repeated = entries.filter((entry, i) => entries.findIndex((other) => same(other, entry)) !== i);
     if (repeated.length) {
       warn(rel, `The changelog lists ${[...new Set(repeated)].map((v) => `v${v}`).join(', ')} more than once. Keep one entry per version.`);
     }
