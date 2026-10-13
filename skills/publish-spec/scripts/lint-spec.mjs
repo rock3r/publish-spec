@@ -810,6 +810,33 @@ async function runBrowserAudit(urls, outScreenshotDir) {
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
+// ── 4. Version & changelog ────────────────────────────────────────────────────
+// A published spec declares its version once (`data-spec-version`) and keeps a changelog
+// (`id="changelog"`) with one `data-version` entry per release, newest first.
+function lintVersioning(htmlFiles, rootDir) {
+  const versioned = htmlFiles
+    .map((f) => ({ rel: relative(rootDir, f) || basename(f), html: readFileSync(f, 'utf8') }))
+    .map((page) => ({ ...page, version: page.html.match(/\bdata-spec-version=["']([^"']+)["']/i)?.[1] }))
+    .filter((page) => page.version);
+  if (versioned.length === 0) {
+    warn('target', 'No page declares data-spec-version. Mark the version on the entry page and add a changelog (house style: "Version and changelog").');
+    return;
+  }
+  for (const { rel, html, version } of versioned) {
+    if (!/^\d+\.\d+(?:\.\d+)?$/.test(version)) {
+      warn(rel, `data-spec-version="${version}" is not MAJOR.MINOR or MAJOR.MINOR.PATCH.`);
+    }
+    if (!/\bid=["']changelog["']/i.test(html)) {
+      warn(rel, `Declares v${version} but has no changelog (id="changelog").`);
+      continue;
+    }
+    const entries = [...html.matchAll(/\bdata-version=["']([^"']+)["']/gi)].map((m) => m[1]);
+    if (entries[0] !== version) {
+      warn(rel, `The newest changelog entry is ${entries[0] ? `v${entries[0]}` : 'missing'}, but the page declares v${version}. Add the entry first in the list.`);
+    }
+  }
+}
+
 async function main() {
   const isUrl = /^https?:\/\//i.test(target);
 
@@ -845,6 +872,8 @@ async function main() {
         lintCssContent(inlineStyles, `${relative(assetRoot, f) || basename(f)} <style>`);
       }
     }
+
+    if (htmlFiles.length > 0) lintVersioning(htmlFiles, assetRoot);
 
     for (const c of cssFiles) {
       const rel = relative(assetRoot, c) || basename(c);

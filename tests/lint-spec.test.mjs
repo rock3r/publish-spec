@@ -47,3 +47,14 @@ test('a missing target exits with code 2', () => {
   const { code } = lint('does-not-exist');
   assert.equal(code, 2);
 });
+
+test('a version without a matching newest changelog entry warns', () => {
+  const { code, out } = lint('stale-changelog', '--strict');
+  assert.match(out, /newest changelog entry is v1\.1, but the page declares v1\.2/);
+  assert.notEqual(code, 0, out);
+});
+
+test('a page with no version warns', () => {
+  const { out } = lint('leftovers');
+  assert.match(out, /No page declares data-spec-version/);
+});
