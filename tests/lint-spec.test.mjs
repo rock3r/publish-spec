@@ -116,3 +116,8 @@ test('prefixed attributes such as x-data-spec-version and x-data-version do not 
 test('version attributes written as prose do not count', () => {
   assert.match(lint('version-in-prose').out, /No data-spec-version on this entry page/);
 });
+
+test('metadata syntax inside another attribute value does not count', () => {
+  assert.match(lint('version-in-attribute').out, /No data-spec-version on this entry page/);
+  assert.match(lint('changelog-id-in-attribute').out, /Declares v1\.1 but has no changelog/);
+});

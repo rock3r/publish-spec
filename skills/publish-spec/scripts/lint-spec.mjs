@@ -819,30 +819,49 @@ const stripNonRendered = (html) =>
     .replace(/<!--[\s\S]*?-->/g, ' ')
     .replace(/<(pre|code|script|style|template|textarea)\b[\s\S]*?<\/\1>/gi, ' ');
 
-// Values of one attribute, read only from real start tags, never from text that mentions it.
-const attributeValues = (html, name) =>
-  [...html.matchAll(/<[a-z][a-z0-9-]*((?:\s+[^\s>]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?)*)\s*\/?>/gi)].flatMap((tag) => {
-    const attr = new RegExp(`(?:^|\\s)${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i').exec(tag[1]);
-    return attr ? [attr[1] ?? attr[2] ?? attr[3]] : [];
-  });
+// Start tags with their attributes, tokenized one attribute at a time so that text inside a
+// quoted value is never read as another attribute.
+function* startTags(html) {
+  const tagStart = /<([a-z][a-z0-9-]*)/gi;
+  for (let m = tagStart.exec(html); m; m = tagStart.exec(html)) {
+    const attributes = new Map();
+    const attribute = /\s*(?:(\/?>)|([^\s"'>\/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?|\/)/y;
+    attribute.lastIndex = tagStart.lastIndex;
+    let end = -1;
+    for (let a = attribute.exec(html); a && a[0] !== ''; a = attribute.exec(html)) {
+      if (a[1]) {
+        end = attribute.lastIndex;
+        break;
+      }
+      if (a[2]) {
+        const name = a[2].toLowerCase();
+        if (!attributes.has(name)) attributes.set(name, a[3] ?? a[4] ?? a[5] ?? '');
+      }
+    }
+    if (end < 0) continue;
+    yield { name: m[1].toLowerCase(), index: m.index, end, attributes };
+    tagStart.lastIndex = end;
+  }
+}
 
-// Returns the inner HTML of the element with id="changelog", following nested tags of the same name.
+const attributeValues = (html, name) =>
+  [...startTags(html)].filter((tag) => tag.attributes.has(name)).map((tag) => tag.attributes.get(name));
+
+// Returns the inner HTML of the element whose id attribute is "changelog", following nested
+// tags of the same name.
 function changelogBody(html) {
-  const open = /<([a-z][a-z0-9-]*)\b[^>]*?\sid=["']changelog["'][^>]*>/i.exec(html);
+  const open = [...startTags(html)].find((tag) => tag.attributes.get('id') === 'changelog');
   if (!open) return null;
-  const tag = open[1].toLowerCase();
-  const pattern = new RegExp(`<(/?)${tag}\\b[^>]*>`, 'gi');
-  pattern.lastIndex = open.index + open[0].length;
+  const pattern = new RegExp(`<(/?)${open.name}\\b[^>]*>`, 'gi');
+  pattern.lastIndex = open.end;
   let depth = 1;
   for (let m = pattern.exec(html); m; m = pattern.exec(html)) {
     depth += m[1] ? -1 : 1;
-    if (depth === 0) return html.slice(open.index + open[0].length, m.index);
+    if (depth === 0) return html.slice(open.end, m.index);
   }
-  return html.slice(open.index + open[0].length);
+  return html.slice(open.end);
 }
 
-// Every entry page (an index.html, the single file target, or a deployed URL) carries the
-// version. Inner pages share their entry page's version and are not checked.
 function lintVersioning(pages) {
   for (const { rel, html: raw } of pages) {
     const html = stripNonRendered(raw);
