@@ -54,6 +54,17 @@ By default, `publish-spec` authors and validates static HTML specs locally. To t
 node skills/publish-spec/scripts/lint-spec.mjs <dir-or-html-or-url> --screenshots /tmp/spec-shots
 ```
 
+## Development
+
+CI runs on every push and pull request. Run the same checks locally:
+
+```bash
+node --test tests/
+rumdl check .
+```
+
+The tests run the linter in static-only mode against the pages in `tests/fixtures/`. They also check that `SKILL.md` and both plugin manifests declare the same version. Bump all three together.
+
 ## Provenance & Attribution
 
 Provenance is tracked in [`skills/publish-spec/skill-source.json`](skills/publish-spec/skill-source.json) using [`rock3r/skill-provenance`](https://github.com/rock3r/skill-provenance).
@@ -70,7 +81,7 @@ Apache License 2.0. See [`LICENSE`](LICENSE).
 > you may not use this file except in compliance with the License.
 > You may obtain a copy of the License at
 >
->   http://www.apache.org/licenses/LICENSE-2.0
+> <http://www.apache.org/licenses/LICENSE-2.0>
 >
 > Unless required by applicable law or agreed to in writing, software
 > distributed under the License is distributed on an "AS IS" BASIS,
