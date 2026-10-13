@@ -135,3 +135,7 @@ test('title and script contents are text, not tags', () => {
   const { code, out } = lint('version-raw-text', '--strict');
   assert.equal(code, 0, out);
 });
+
+test('iframe fallback content is text, not tags', () => {
+  assert.match(lint('version-iframe').out, /No data-spec-version on this entry page/);
+});

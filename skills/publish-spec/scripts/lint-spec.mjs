@@ -843,10 +843,13 @@ function* tags(html, from = 0) {
   }
 }
 
-// Tags that browsers render as elements, skipping where markup examples live. Raw-text and
-// RCDATA elements (script, style, textarea, title) hold text up to their own closing tag, so
-// their content is jumped over without parsing. pre, code and template are skipped with nesting.
-const RAW_TEXT = new Set(['script', 'style', 'textarea', 'title']);
+// Tags that browsers render as elements, skipping where markup examples live. The HTML parser
+// reads the content of raw-text and RCDATA elements as text up to their own closing tag
+// (noscript too, with scripting on; plaintext runs to the end of the page), so that content is
+// jumped over without parsing. pre, code and template are skipped with nesting.
+const RAW_TEXT = new Set([
+  'script', 'style', 'textarea', 'title', 'iframe', 'noembed', 'noframes', 'noscript', 'xmp', 'plaintext',
+]);
 const SKIPPED = new Set(['pre', 'code', 'template']);
 function* renderedTags(html) {
   const skipping = [];
