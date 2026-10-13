@@ -244,3 +244,8 @@ test('the browser audit is skipped when a deployed URL fails', async () => {
     server.close();
   }
 });
+
+test('a lowercase <![cdata[ is a bogus comment, not CDATA', () => {
+  const { code, out } = lint('cdata-lowercase', '--strict');
+  assert.equal(code, 0, out);
+});

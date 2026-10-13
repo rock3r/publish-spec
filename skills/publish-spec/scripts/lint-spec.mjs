@@ -835,7 +835,9 @@ function* tags(html, from = 0) {
     if (m[2]) {
       // In SVG or MathML a CDATA section ends at ]]>. In HTML content it is a bogus comment that
       // ends at the first >. Without ]]>, fall back to > rather than dropping the rest of the page.
-      let close = html.indexOf(']]>', tagStart.lastIndex);
+      // Only the exact uppercase keyword opens CDATA. <![cdata[ is a bogus comment ending at >.
+      const exact = html.startsWith('<![CDATA[', m.index);
+      let close = exact ? html.indexOf(']]>', tagStart.lastIndex) : -1;
       let length = 3;
       if (close < 0) {
         close = html.indexOf('>', tagStart.lastIndex);
