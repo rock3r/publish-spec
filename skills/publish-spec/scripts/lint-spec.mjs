@@ -813,9 +813,15 @@ async function runBrowserAudit(urls, outScreenshotDir) {
 // ── 4. Version & changelog ────────────────────────────────────────────────────
 // A published spec declares its version once (`data-spec-version`) and keeps a changelog
 // (`id="changelog"`) with one `data-version` entry per release, newest first.
+// Markup examples in code, scripts, templates and comments are not the page's own metadata.
+const stripNonRendered = (html) =>
+  html
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<(pre|code|script|style|template|textarea)\b[\s\S]*?<\/\1>/gi, ' ');
+
 function lintVersioning(htmlFiles, rootDir) {
   const versioned = htmlFiles
-    .map((f) => ({ rel: relative(rootDir, f) || basename(f), html: readFileSync(f, 'utf8') }))
+    .map((f) => ({ rel: relative(rootDir, f) || basename(f), html: stripNonRendered(readFileSync(f, 'utf8')) }))
     .map((page) => ({ ...page, version: page.html.match(/\bdata-spec-version=["']([^"']+)["']/i)?.[1] }))
     .filter((page) => page.version);
   if (versioned.length === 0) {

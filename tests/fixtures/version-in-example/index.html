@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Version markup</title>
+<style>
+:root { --paper: #fbfaf7; --ink: #1d1b18; --ink-soft: #5b564f; --line: #ddd8cf; --accent: #2f5d8a; --code-bg: #f1eee8; }
+@media (prefers-color-scheme: dark) {
+  :root { --paper: #171614; --ink: #ece8e1; --ink-soft: #aaa49a; --line: #38342e; --accent: #8db4dc; --code-bg: #22201d; }
+}
+body { background: var(--paper); color: var(--ink); }
+</style>
+</head>
+<body>
+<main>
+<h1>Version markup</h1>
+<p>Specs mark their version in the header and keep a changelog.</p>
+<pre><code>&lt;span data-spec-version="1.0"&gt;v1.0&lt;/span&gt;
+&lt;details id="changelog"&gt;&lt;li data-version="1.0"&gt;First&lt;/li&gt;&lt;/details&gt;</code></pre>
+<!-- <span data-spec-version="2.0"></span> -->
+</main>
+</body>
+</html>

@@ -58,3 +58,8 @@ test('a page with no version warns', () => {
   const { out } = lint('leftovers');
   assert.match(out, /No page declares data-spec-version/);
 });
+
+test('version markup inside code examples and comments does not count', () => {
+  const { out } = lint('version-in-example');
+  assert.match(out, /No page declares data-spec-version/);
+});
