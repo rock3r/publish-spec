@@ -20,7 +20,7 @@ jobs:
       - name: Check script syntax
         run: node --check skills/publish-spec/scripts/lint-spec.mjs
       - name: Run tests
-        run: node --test tests/
+        run: node --test tests/*.test.mjs
 
   markdown:
     name: Markdown lint

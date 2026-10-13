@@ -59,7 +59,7 @@ node skills/publish-spec/scripts/lint-spec.mjs <dir-or-html-or-url> --screenshot
 CI runs on every push and pull request. Run the same checks locally:
 
 ```bash
-node --test tests/
+node --test tests/*.test.mjs
 rumdl check .
 ```
 
