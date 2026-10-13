@@ -139,3 +139,11 @@ test('title and script contents are text, not tags', () => {
 test('iframe fallback content is text, not tags', () => {
   assert.match(lint('version-iframe').out, /No data-spec-version on this entry page/);
 });
+
+test('plaintext runs to the end of the page', () => {
+  assert.match(lint('version-plaintext').out, /No data-spec-version on this entry page/);
+});
+
+test('a void element with id="changelog" has no entries', () => {
+  assert.match(lint('changelog-void').out, /newest changelog entry is missing, but the page declares v1\.1/);
+});

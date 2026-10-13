@@ -857,6 +857,7 @@ function* renderedTags(html) {
   restart: for (;;) {
     for (const tag of tags(html, from)) {
       if (!tag.closing && RAW_TEXT.has(tag.name)) {
+        if (tag.name === 'plaintext') return;
         const close = new RegExp(`</${tag.name}[\\s/>]`, 'gi');
         close.lastIndex = tag.end;
         const found = close.exec(html);
@@ -883,12 +884,17 @@ const attributeValues = (html, name) =>
 
 // Returns the inner HTML of the element whose id attribute is "changelog", following nested
 // tags of the same name.
+const VOID_ELEMENTS = new Set([
+  'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr',
+]);
+
 function changelogBody(html) {
   let open = null;
   let depth = 0;
   for (const tag of renderedTags(html)) {
     if (!open) {
       if (!tag.closing && tag.attributes.get('id') === 'changelog') {
+        if (VOID_ELEMENTS.has(tag.name)) return '';
         open = tag;
         depth = 1;
       }
