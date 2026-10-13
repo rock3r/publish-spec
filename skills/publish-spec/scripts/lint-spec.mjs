@@ -819,24 +819,47 @@ const stripNonRendered = (html) =>
     .replace(/<!--[\s\S]*?-->/g, ' ')
     .replace(/<(pre|code|script|style|template|textarea)\b[\s\S]*?<\/\1>/gi, ' ');
 
+// Returns the inner HTML of the element with id="changelog", following nested tags of the same name.
+function changelogBody(html) {
+  const open = /<([a-z][a-z0-9-]*)\b[^>]*\bid=["']changelog["'][^>]*>/i.exec(html);
+  if (!open) return null;
+  const tag = open[1].toLowerCase();
+  const pattern = new RegExp(`<(/?)${tag}\\b[^>]*>`, 'gi');
+  pattern.lastIndex = open.index + open[0].length;
+  let depth = 1;
+  for (let m = pattern.exec(html); m; m = pattern.exec(html)) {
+    depth += m[1] ? -1 : 1;
+    if (depth === 0) return html.slice(open.index + open[0].length, m.index);
+  }
+  return html.slice(open.index + open[0].length);
+}
+
 function lintVersioning(htmlFiles, rootDir) {
   const versioned = htmlFiles
     .map((f) => ({ rel: relative(rootDir, f) || basename(f), html: stripNonRendered(readFileSync(f, 'utf8')) }))
-    .map((page) => ({ ...page, version: page.html.match(/\bdata-spec-version=["']([^"']+)["']/i)?.[1] }))
-    .filter((page) => page.version);
+    .map((page) => ({
+      ...page,
+      declarations: [...page.html.matchAll(/\bdata-spec-version=["']([^"']+)["']/gi)].map((m) => m[1]),
+    }))
+    .filter((page) => page.declarations.length > 0);
   if (versioned.length === 0) {
     warn('target', 'No page declares data-spec-version. Mark the version on the entry page and add a changelog (house style: "Version and changelog").');
     return;
   }
-  for (const { rel, html, version } of versioned) {
+  for (const { rel, html, declarations } of versioned) {
+    if (declarations.length > 1) {
+      warn(rel, `Declares data-spec-version ${declarations.length} times (${declarations.map((v) => `v${v}`).join(', ')}). Mark the version once.`);
+    }
+    const version = declarations[0];
     if (!/^\d+\.\d+(?:\.\d+)?$/.test(version)) {
       warn(rel, `data-spec-version="${version}" is not MAJOR.MINOR or MAJOR.MINOR.PATCH.`);
     }
-    if (!/\bid=["']changelog["']/i.test(html)) {
+    const changelog = changelogBody(html);
+    if (changelog === null) {
       warn(rel, `Declares v${version} but has no changelog (id="changelog").`);
       continue;
     }
-    const entries = [...html.matchAll(/\bdata-version=["']([^"']+)["']/gi)].map((m) => m[1]);
+    const entries = [...changelog.matchAll(/\bdata-version=["']([^"']+)["']/gi)].map((m) => m[1]);
     if (entries[0] !== version) {
       warn(rel, `The newest changelog entry is ${entries[0] ? `v${entries[0]}` : 'missing'}, but the page declares v${version}. Add the entry first in the list.`);
     }

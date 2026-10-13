@@ -63,3 +63,14 @@ test('version markup inside code examples and comments does not count', () => {
   const { out } = lint('version-in-example');
   assert.match(out, /No page declares data-spec-version/);
 });
+
+test('a second version declaration warns, and data-version outside the changelog is ignored', () => {
+  const { out } = lint('version-duplicate');
+  assert.match(out, /Declares data-spec-version 2 times \(v1\.1, v1\.0\)/);
+  assert.doesNotMatch(out, /newest changelog entry/);
+});
+
+test('an empty changelog fails even when another element carries the version', () => {
+  const { out } = lint('version-widget');
+  assert.match(out, /newest changelog entry is missing, but the page declares v1\.1/);
+});
