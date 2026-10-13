@@ -107,3 +107,8 @@ test('data-id="changelog" is not the changelog', () => {
   const { code, out } = lint('version-data-id', '--strict');
   assert.equal(code, 0, out);
 });
+
+test('prefixed attributes such as x-data-spec-version and x-data-version do not count', () => {
+  assert.match(lint('version-prefixed').out, /No data-spec-version on this entry page/);
+  assert.match(lint('version-prefixed-entry').out, /newest changelog entry is v1\.0, but the page declares v1\.1/);
+});

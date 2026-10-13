@@ -839,7 +839,7 @@ function changelogBody(html) {
 function lintVersioning(pages) {
   for (const { rel, html: raw } of pages) {
     const html = stripNonRendered(raw);
-    const declarations = [...html.matchAll(/\bdata-spec-version=["']([^"']+)["']/gi)].map((m) => m[1]);
+    const declarations = [...html.matchAll(/\sdata-spec-version=["']([^"']+)["']/gi)].map((m) => m[1]);
     if (declarations.length === 0) {
       warn(rel, 'No data-spec-version on this entry page. Mark the version and add a changelog (house style: "Version and changelog").');
       continue;
@@ -856,7 +856,7 @@ function lintVersioning(pages) {
       warn(rel, `Declares v${version} but has no changelog (id="changelog").`);
       continue;
     }
-    const entries = [...changelog.matchAll(/\bdata-version=["']([^"']+)["']/gi)].map((m) => m[1]);
+    const entries = [...changelog.matchAll(/\sdata-version=["']([^"']+)["']/gi)].map((m) => m[1]);
     if (entries[0] !== version) {
       warn(rel, `The newest changelog entry is ${entries[0] ? `v${entries[0]}` : 'missing'}, but the page declares v${version}. Add the entry first in the list.`);
     }
