@@ -4,6 +4,19 @@ Each version here becomes a GitHub release. When you bump the version in
 `SKILL.md` and both plugin manifests, add a section for it. The release
 workflow publishes the section as the release notes.
 
+## 1.2.1
+
+- The version check no longer loses the page when a script, style, or quoted
+  value contains `<!--` or `<![CDATA[`. Comments and CDATA are skipped only in
+  markup, where the browser treats them as comments.
+- The check also warns when the changelog repeats a version, lists versions
+  out of order, or is never closed. An unclosed changelog used to swallow the
+  rest of the page.
+- Linting a single file treats that file as an entry page, and the house style
+  now says so.
+- A deployed URL that fails to load is an error, and the browser audit is
+  skipped for it.
+
 ## 1.2.0
 
 - Every published spec now has a version and a changelog. The header marks the

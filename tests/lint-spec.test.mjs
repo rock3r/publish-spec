@@ -151,3 +151,49 @@ test('a void element with id="changelog" has no entries', () => {
 test('markup inside SVG CDATA is text', () => {
   assert.match(lint('version-cdata').out, /No data-spec-version on this entry page/);
 });
+
+test('a comment opener inside a script does not swallow the page', () => {
+  const { code, out } = lint('comment-in-script', '--strict');
+  assert.equal(code, 0, out);
+});
+
+test('uppercase names, spaces around = and unquoted values are read', () => {
+  const { code, out } = lint('version-attribute-forms', '--strict');
+  assert.equal(code, 0, out);
+});
+
+test('an unclosed changelog is reported, not read to the end of the page', () => {
+  assert.match(lint('changelog-unclosed').out, /The changelog <details id="changelog"> is never closed/);
+});
+
+test('repeated and out-of-order changelog entries warn', () => {
+  const { out } = lint('changelog-order');
+  assert.match(out, /lists v1\.1 more than once/);
+  assert.match(out, /lists v1\.2 after v1\.1/);
+});
+
+test('a single file target is checked as an entry page', () => {
+  const { out } = lint(join('version-pages', 'walkthrough.html'));
+  assert.match(out, /No data-spec-version on this entry page/);
+});
+
+test('a deployed URL that fails is an error, not a hang', async () => {
+  const server = createServer((_req, res) => {
+    res.statusCode = 500;
+    res.end('nope');
+  });
+  await new Promise((done) => server.listen(0, '127.0.0.1', done));
+  try {
+    const out = await new Promise((done) => {
+      const child = spawn(process.execPath, [linter, `http://127.0.0.1:${server.address().port}/`, '--static-only']);
+      let text = '';
+      child.stdout.on('data', (chunk) => (text += chunk));
+      child.stderr.on('data', (chunk) => (text += chunk));
+      child.on('close', (code) => done({ code, text }));
+    });
+    assert.equal(out.code, 1, out.text);
+    assert.match(out.text, /returned 500/);
+  } finally {
+    server.close();
+  }
+});

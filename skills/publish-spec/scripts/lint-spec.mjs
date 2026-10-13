@@ -813,16 +813,22 @@ async function runBrowserAudit(urls, outScreenshotDir) {
 // ── 4. Version & changelog ────────────────────────────────────────────────────
 // A published spec declares its version once (`data-spec-version`) and keeps a changelog
 // (`id="changelog"`) with one `data-version` entry per release, newest first.
-// Comments and CDATA sections (in SVG or MathML) are text, not the page's own metadata. Code,
-// scripts, templates and form fields are skipped tag by tag in renderedTags().
-const stripNonRendered = (html) => html.replace(/<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>/g, ' ');
 
 // Start and end tags with their attributes, tokenized one attribute at a time so that text
 // inside a quoted value is never read as another attribute or tag.
+// Comments and CDATA sections (in SVG or MathML) are text, so the scan jumps over them. They
+// only count in markup: inside raw text or a quoted value, renderedTags() and the attribute
+// tokenizer never reach this check.
 function* tags(html, from = 0) {
-  const tagStart = /<(\/?)([a-z][a-z0-9-]*)/gi;
+  const tagStart = /<(?:(!--)|(!\[CDATA\[)|(\/?)([a-z][a-z0-9-]*))/gi;
   tagStart.lastIndex = from;
   for (let m = tagStart.exec(html); m; m = tagStart.exec(html)) {
+    if (m[1] || m[2]) {
+      const close = html.indexOf(m[1] ? '-->' : ']]>', tagStart.lastIndex);
+      if (close < 0) return;
+      tagStart.lastIndex = close + 3;
+      continue;
+    }
     const attributes = new Map();
     const attribute = /\s*(?:(\/?>)|([^\s"'>\/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?|\/)/y;
     attribute.lastIndex = tagStart.lastIndex;
@@ -838,7 +844,7 @@ function* tags(html, from = 0) {
       }
     }
     if (end < 0) continue;
-    yield { closing: m[1] === '/', name: m[2].toLowerCase(), index: m.index, end, attributes };
+    yield { closing: m[3] === '/', name: m[4].toLowerCase(), index: m.index, end, attributes };
     tagStart.lastIndex = end;
   }
 }
@@ -904,12 +910,19 @@ function changelogBody(html) {
     depth += tag.closing ? -1 : 1;
     if (depth === 0) return html.slice(open.end, tag.index);
   }
-  return open ? html.slice(open.end) : null;
+  // An unclosed changelog has no reliable end. Report it instead of reading to the end of the page.
+  return open ? { unclosed: open.name } : null;
 }
 
+// MAJOR.MINOR[.PATCH], with a missing part counting as 0.
+const compareVersions = (a, b) => {
+  const [pa, pb] = [a.split('.').map(Number), b.split('.').map(Number)];
+  for (let i = 0; i < 3; i += 1) if ((pa[i] ?? 0) !== (pb[i] ?? 0)) return (pa[i] ?? 0) - (pb[i] ?? 0);
+  return 0;
+};
+
 function lintVersioning(pages) {
-  for (const { rel, html: raw } of pages) {
-    const html = stripNonRendered(raw);
+  for (const { rel, html } of pages) {
     const declarations = attributeValues(html, 'data-spec-version');
     if (declarations.length === 0) {
       warn(rel, 'No data-spec-version on this entry page. Mark the version and add a changelog (house style: "Version and changelog").');
@@ -927,9 +940,22 @@ function lintVersioning(pages) {
       warn(rel, `Declares v${version} but has no changelog (id="changelog").`);
       continue;
     }
+    if (changelog.unclosed) {
+      warn(rel, `The changelog <${changelog.unclosed} id="changelog"> is never closed.`);
+      continue;
+    }
     const entries = attributeValues(changelog, 'data-version');
     if (entries[0] !== version) {
       warn(rel, `The newest changelog entry is ${entries[0] ? `v${entries[0]}` : 'missing'}, but the page declares v${version}. Add the entry first in the list.`);
+    }
+    const repeated = entries.filter((entry, i) => entries.indexOf(entry) !== i);
+    if (repeated.length) {
+      warn(rel, `The changelog lists ${[...new Set(repeated)].map((v) => `v${v}`).join(', ')} more than once. Keep one entry per version.`);
+    }
+    const numeric = entries.filter((entry) => /^\d+\.\d+(?:\.\d+)?$/.test(entry));
+    const outOfOrder = numeric.findIndex((entry, i) => i > 0 && compareVersions(numeric[i - 1], entry) < 0);
+    if (outOfOrder > 0) {
+      warn(rel, `The changelog lists v${numeric[outOfOrder]} after v${numeric[outOfOrder - 1]}. List entries newest first.`);
     }
   }
 }
@@ -939,14 +965,19 @@ async function main() {
 
   if (isUrl) {
     info('target', `Auditing live URL: ${target}`);
+    let fetched = false;
     try {
       const response = await fetch(target, { signal: AbortSignal.timeout(15000) });
       if (!response.ok) err('target', `GET ${target} returned ${response.status}.`);
-      else lintVersioning([{ rel: target, html: await response.text() }]);
+      else {
+        lintVersioning([{ rel: target, html: await response.text() }]);
+        fetched = true;
+      }
     } catch (e) {
       err('target', `Could not fetch ${target}: ${e.message}`);
     }
-    if (!staticOnly) {
+    // A page that cannot be fetched cannot be audited in the browser either.
+    if (!staticOnly && fetched) {
       await runBrowserAudit([{ url: target, label: target }], screenshotDir);
     }
   } else {
