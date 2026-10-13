@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { changelogSection, skillVersion } from '../scripts/changelog.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (p) => readFileSync(join(root, p), 'utf8');
@@ -26,4 +27,9 @@ test('every JSON manifest parses', () => {
   ]) {
     assert.doesNotThrow(() => JSON.parse(read(p)), p);
   }
+});
+
+test('CHANGELOG.md has an entry for the current version', () => {
+  const version = skillVersion();
+  assert.ok(changelogSection(version), `Add a "## ${version}" section to CHANGELOG.md`);
 });

@@ -63,7 +63,11 @@ node --test tests/*.test.mjs
 rumdl check .
 ```
 
-The tests run the linter in static-only mode against the pages in `tests/fixtures/`. They also check that `SKILL.md` and both plugin manifests declare the same version. Bump all three together.
+The tests run the linter in static-only mode against the pages in `tests/fixtures/`. They also check that `SKILL.md` and both plugin manifests declare the same version, and that `CHANGELOG.md` has an entry for it.
+
+## Releases
+
+To release, bump the version in `SKILL.md`, `.claude-plugin/plugin.json`, and `.codex-plugin/plugin.json`, and add a section for it to `CHANGELOG.md`. When the change lands on `main`, the release workflow tags `v<version>` and publishes a GitHub release with that section as the notes. A version that already has a release is skipped.
 
 ## Provenance & Attribution
 
