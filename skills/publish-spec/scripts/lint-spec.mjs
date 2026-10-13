@@ -819,8 +819,9 @@ const stripNonRendered = (html) => html.replace(/<!--[\s\S]*?-->/g, ' ');
 
 // Start and end tags with their attributes, tokenized one attribute at a time so that text
 // inside a quoted value is never read as another attribute or tag.
-function* tags(html) {
+function* tags(html, from = 0) {
   const tagStart = /<(\/?)([a-z][a-z0-9-]*)/gi;
+  tagStart.lastIndex = from;
   for (let m = tagStart.exec(html); m; m = tagStart.exec(html)) {
     const attributes = new Map();
     const attribute = /\s*(?:(\/?>)|([^\s"'>\/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?|\/)/y;
@@ -842,20 +843,35 @@ function* tags(html) {
   }
 }
 
-// Tags outside pre, code, script, style, template and textarea, where markup examples live.
-const NOT_RENDERED = new Set(['pre', 'code', 'script', 'style', 'template', 'textarea']);
+// Tags that browsers render as elements, skipping where markup examples live. Raw-text and
+// RCDATA elements (script, style, textarea, title) hold text up to their own closing tag, so
+// their content is jumped over without parsing. pre, code and template are skipped with nesting.
+const RAW_TEXT = new Set(['script', 'style', 'textarea', 'title']);
+const SKIPPED = new Set(['pre', 'code', 'template']);
 function* renderedTags(html) {
   const skipping = [];
-  for (const tag of tags(html)) {
-    if (skipping.length) {
-      if (tag.name === skipping.at(-1)) tag.closing ? skipping.pop() : skipping.push(tag.name);
-      continue;
+  let from = 0;
+  restart: for (;;) {
+    for (const tag of tags(html, from)) {
+      if (!tag.closing && RAW_TEXT.has(tag.name)) {
+        const close = new RegExp(`</${tag.name}[\\s/>]`, 'gi');
+        close.lastIndex = tag.end;
+        const found = close.exec(html);
+        if (!found) return;
+        from = found.index + 2;
+        continue restart;
+      }
+      if (skipping.length) {
+        if (tag.name === skipping.at(-1)) tag.closing ? skipping.pop() : skipping.push(tag.name);
+        continue;
+      }
+      if (!tag.closing && SKIPPED.has(tag.name)) {
+        skipping.push(tag.name);
+        continue;
+      }
+      yield tag;
     }
-    if (!tag.closing && NOT_RENDERED.has(tag.name)) {
-      skipping.push(tag.name);
-      continue;
-    }
-    yield tag;
+    return;
   }
 }
 

@@ -130,3 +130,8 @@ test('tag syntax inside a quoted value does not end or nest the changelog', () =
 test('a quoted </pre> does not end a code example early', () => {
   assert.match(lint('version-quoted-pre').out, /No data-spec-version on this entry page/);
 });
+
+test('title and script contents are text, not tags', () => {
+  const { code, out } = lint('version-raw-text', '--strict');
+  assert.equal(code, 0, out);
+});
