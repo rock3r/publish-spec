@@ -1,0 +1,225 @@
+{
+  "description": "Two-sided calibration items for judge-prose.mjs. Every wired check has both passing and failing items with unambiguous readings, and none of the item strings appear in the check criteria.",
+  "checks": {
+    "style_defect": {
+      "id": "style_defect",
+      "type": "choice",
+      "instructions": "Classify the prose style of this technical documentation passage.",
+      "criteria": {
+        "plain_technical": "Clear technical prose, rules, or structured callouts (including 'Open decision:' labels) that state what the code, UI, or user does and why.",
+        "rhetorical_contrast_or_aphorism": "Substitutes punchy slogans, fortune-cookie aphorisms, or formulaic \"not X, it is Y\" antithesis for a direct explanation.",
+        "poetic_or_obscuring_metaphor": "Replaces a literal technical explanation with a literary conceit, riddle, or playful anthropomorphism that a non-native English reader must decode.",
+        "telegraphic_fragments": "Writes a rule or explanation as a chain of staccato, verbless fragments (such as three or more clipped noun phrases separated by periods) instead of grammatical sentences.",
+        "corporate_or_chatbot_filler": "Pads the passage with promotional adjectives, vague assurances that omit concrete mechanisms or failure conditions, inflated copulas (\"serves as\"), or participle tails (\"ensuring...\", \"highlighting...\").",
+        "self_commentary_or_withheld_names": "Stops to insist that a claim is real or hard-won, narrates debugging effort, or refers coyly to unnamed tools (\"one tool does X; the others do Y\") instead of naming them."
+      },
+      "expect": [
+        "plain_technical"
+      ],
+      "min_confidence": 0.65,
+      "remedies": {
+        "rhetorical_contrast_or_aphorism": "Replace the 'not X, it is Y' contrast or slogan with a direct sentence stating what the system does or what breaks and why.",
+        "poetic_or_obscuring_metaphor": "Replace the metaphor or personification with the literal user-visible or system behavior.",
+        "telegraphic_fragments": "Rewrite the clipped fragments as complete grammatical sentences with an explicit subject and verb.",
+        "corporate_or_chatbot_filler": "Cut the promotional adjectives, inflated copula, or participle tail and state the concrete fact or measurement.",
+        "self_commentary_or_withheld_names": "Cut the truth-vouching or war-story aside, or replace indirect pronouns ('one tool... the others') with the exact tool, file, or component names."
+      }
+    },
+    "meaning_preserved": {
+      "id": "meaning_preserved",
+      "type": "choice",
+      "instructions": "Compare the REWRITTEN passage against the ORIGINAL passage. Did the rewrite preserve the exact technical rules, thresholds, conditions, and caveats?",
+      "criteria": {
+        "preserved": "The rewrite keeps the same technical rules, conditions, thresholds, and caveats, even when it removes metaphors, slogans, rhetorical contrasts, or unmeasured puffery.",
+        "changed_rule_or_threshold": "The rewrite alters a technical rule, threshold, default, or failure behavior (for example, relaxing a limit, requiring extra parameters, or claiming something never fails when it throws).",
+        "dropped_caveat_or_scope": "The rewrite omits a concrete technical warning, credential/security caveat, or operational scope boundary (not merely a metaphor or rhetorical flourish) from the original."
+      },
+      "expect": [
+        "preserved"
+      ],
+      "min_confidence": 0.6
+    }
+  },
+  "items": [
+    {
+      "name": "plain technical cache behavior",
+      "check": "style_defect",
+      "expect_verdict": "pass",
+      "state": "The cache skips reads it has already answered within 30 seconds. Put the measured latency change next to the trace it came from."
+    },
+    {
+      "name": "plain technical named skills",
+      "check": "style_defect",
+      "expect_verdict": "pass",
+      "state": "The skills coordinate around a per-repository MOTION.md file that records a project's motion language. improve-android-motion drafts this file from the codebase, and animate-compose and review-android-motion read it before applying default rules."
+    },
+    {
+      "name": "plain technical legitimate contrast",
+      "check": "style_defect",
+      "expect_verdict": "pass",
+      "state": "Exits use fewer animated properties rather than shorter durations. Dropping scale or slide on exit keeps the dismissal unobtrusive without making it abrupt."
+    },
+    {
+      "name": "plain technical data motion",
+      "check": "style_defect",
+      "expect_verdict": "pass",
+      "state": "Bouncy motion on a chart bar, table row, or number makes the data harder to read while it settles."
+    },
+    {
+      "name": "plain visual hierarchy instruction",
+      "check": "style_defect",
+      "expect_verdict": "pass",
+      "state": "Choose one primary focal element per section and support it with consistent type and spacing. Reduce visual weight on surrounding controls while keeping all of their labels visible."
+    },
+    {
+      "name": "plain interaction feedback instruction",
+      "check": "style_defect",
+      "expect_verdict": "pass",
+      "state": "Show immediate visual feedback when a user submits the form, and keep error messages next to the field that failed validation."
+    },
+    {
+      "name": "plain two-column layout description",
+      "check": "style_defect",
+      "expect_verdict": "pass",
+      "state": "The workspace has a dense proposal index on the left and a reading column on the right. The reading column uses a cool background. A white panel with a 1px border holds the submission title, speakers, topics, and abstract."
+    },
+    {
+      "name": "plain rate-limit and retry behavior",
+      "check": "style_defect",
+      "expect_verdict": "pass",
+      "state": "The sync worker slows requests near API limits and retries HTTP 429, 502, and 503 responses. The client throws an error once the retry limit is reached."
+    },
+    {
+      "name": "plain allowlist matching rule",
+      "check": "style_defect",
+      "expect_verdict": "pass",
+      "state": "Each allowlist entry accepts a hostname, a CIDR block, or both. Matching either field grants access to the endpoint. An entry with neither field grants no access."
+    },
+    {
+      "name": "plain xcrun DEVELOPER_DIR fallback",
+      "check": "style_defect",
+      "expect_verdict": "pass",
+      "state": "If xcrun simctl fails with unable to find utility simctl and /Applications/Xcode.app/Contents/Developer exists on disk, ATC retries automatically. It sets DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer in the child xcrun environment."
+    },
+    {
+      "name": "epigrammatic quorum antithesis",
+      "check": "style_defect",
+      "expect_verdict": "fail",
+      "state": "Without that distinction a skill canonizes accidents: tween(300) across thirty files is not a decision, it is a copy-paste with a quorum."
+    },
+    {
+      "name": "poetic anthropomorphism on star",
+      "check": "style_defect",
+      "expect_verdict": "fail",
+      "state": "Expressive motion reads as approval. Spent on a user undoing something, it congratulates them for the retraction and makes the correction feel as weighty as the commitment. A star is pleased to be lit and merely obedient when put out."
+    },
+    {
+      "name": "telegraphic verbless rule",
+      "check": "style_defect",
+      "expect_verdict": "fail",
+      "state": "Exact. Values, symbols, APIs. No adjectives."
+    },
+    {
+      "name": "coy unnamed actors",
+      "check": "style_defect",
+      "expect_verdict": "fail",
+      "state": "The keystone is a per-repository MOTION.md capturing that codebase's motion language. One skill generates it; the others read and conform to it."
+    },
+    {
+      "name": "truth-vouching self-commentary",
+      "check": "style_defect",
+      "expect_verdict": "fail",
+      "state": "That is not a hypothetical — fabricates_input failed three reviews that were quoting a MOTION.md which had in fact been staged for them."
+    },
+    {
+      "name": "corporate filler with participle tails",
+      "check": "style_defect",
+      "expect_verdict": "fail",
+      "state": "The cache serves as a pivotal layer, ensuring low latency and highlighting the system's scalability across seamless workflows."
+    },
+    {
+      "name": "epigrammatic restraint slogan",
+      "check": "style_defect",
+      "expect_verdict": "fail",
+      "state": "Restraint is depth, not absence. A layout speaks through one decisive gesture while the surrounding regions hold their breath so that gesture can be heard. Loud is busy, not bold."
+    },
+    {
+      "name": "rhetorical craft antithesis",
+      "check": "style_defect",
+      "expect_verdict": "fail",
+      "state": "Polish is not a coat of decorative paint applied at the end; it is engineering conviction revealed through an unexpectedly humane micro-interaction."
+    },
+    {
+      "name": "abstraction serves the caller slogan",
+      "check": "style_defect",
+      "expect_verdict": "fail",
+      "state": "The underlying principle: the implementation must go beyond what callers expect from a library. The abstraction serves the caller, not the other way around."
+    },
+    {
+      "name": "debugging war-story commentary",
+      "check": "style_defect",
+      "expect_verdict": "fail",
+      "state": "This cost hours to track down, so it is worth stating plainly. Every item below was learned the hard way during a late-night debugging session."
+    },
+    {
+      "name": "corporate intelligent rate limiting puffery",
+      "check": "style_defect",
+      "expect_verdict": "fail",
+      "state": "The sync client includes a comprehensive, intelligent rate limiting system designed to continue slowly rather than fail outright. The system automatically handles rate limits, server errors, and network issues with minimal configuration required."
+    },
+    {
+      "name": "participle-tail zero ambiguity assurance",
+      "check": "style_defect",
+      "expect_verdict": "fail",
+      "state": "These snippets demonstrate the exact packet creation logic, ensuring zero ambiguity regarding byte order and structure across seamless BLE transfers."
+    },
+    {
+      "name": "rewrite preserves token rule",
+      "check": "meaning_preserved",
+      "expect_verdict": "pass",
+      "state": "ORIGINAL:\nNumbers written where they are used read as accident. A product's motion has one voice or none, and a value nobody can find again is a decision nobody made. Define durations and springs once in a shared token object.\n\nREWRITTEN:\nHardcoded durations and springs scattered across call sites drift out of sync and make a product's motion inconsistent. Define durations and springs once in a shared token object."
+    },
+    {
+      "name": "rewrite preserves design and engineering roles",
+      "check": "meaning_preserved",
+      "expect_verdict": "pass",
+      "state": "ORIGINAL:\nDesign owns the intent line and can change it without reading code. Engineering owns the binding and keeps it resolving to something real. Neither side needs to edit the other's half.\n\nREWRITTEN:\nDesigners can update the Intent line without reading code, while engineers own the Binding symbol and keep it pointing to a real token in code. Neither role needs to edit the other's line."
+    },
+    {
+      "name": "rewrite preserves obstacle-removal rule",
+      "check": "meaning_preserved",
+      "expect_verdict": "pass",
+      "state": "ORIGINAL:\nSimplicity is not about removing controls. It is about removing friction between operators and their task. Every control must earn its place on the screen.\n\nREWRITTEN:\nRemove friction that slows operators down while keeping the controls they need. Every control on the screen must support an operator task."
+    },
+    {
+      "name": "rewrite preserves DEVELOPER_DIR fallback behavior",
+      "check": "meaning_preserved",
+      "expect_verdict": "pass",
+      "state": "ORIGINAL:\nIf xcrun simctl fails with unable to find utility \"simctl\" and /Applications/Xcode.app/Contents/Developer exists on disk, ATC automatically retries and spawns xcrun with DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer in its child environment — fixing the issue in 0ms without requiring sudo xcode-select -s.\n\nREWRITTEN:\nIf xcrun simctl fails with unable to find utility \"simctl\" and /Applications/Xcode.app/Contents/Developer exists on disk, ATC retries automatically with DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer in the child xcrun environment without requiring sudo xcode-select -s."
+    },
+    {
+      "name": "rewrite relaxes T-009 ceiling",
+      "check": "meaning_preserved",
+      "expect_verdict": "fail",
+      "state": "ORIGINAL:\n100+ times per day: Platform state layer only. No scale, bounce, or spatial motion.\n\nREWRITTEN:\n100+ times per day: Platform state layer only (or <=150ms). No scale, bounce, or spatial motion."
+    },
+    {
+      "name": "rewrite requires all four NavHost callbacks",
+      "check": "meaning_preserved",
+      "expect_verdict": "fail",
+      "state": "ORIGINAL:\nNavHost defaults to a 700ms crossfade. Override enterTransition and exitTransition at the NavHost level; popEnterTransition and popExitTransition inherit from them unless reverse motion differs.\n\nREWRITTEN:\nNavHost defaults to a 700ms crossfade. Always specify all four transition callbacks (enterTransition, exitTransition, popEnterTransition, and popExitTransition) on NavHost."
+    },
+    {
+      "name": "rewrite drops credential exposure warning",
+      "check": "meaning_preserved",
+      "expect_verdict": "fail",
+      "state": "ORIGINAL:\nStart the worker with --forward-env so the API key is injected. Note that --forward-env exposes user-scoped credentials to every child process and plugin on that host, so prefer a project-scoped key file.\n\nREWRITTEN:\nStart the worker with --forward-env so the API key is injected into the worker environment."
+    },
+    {
+      "name": "rewrite claims retries never fail when exhausted",
+      "check": "meaning_preserved",
+      "expect_verdict": "fail",
+      "state": "ORIGINAL:\nThe sync worker slows requests near API limits and retries HTTP 429, 502, and 503 responses. The client throws when its attempt limit is reached, and network exceptions propagate immediately without retries.\n\nREWRITTEN:\nThe sync worker handles API rate limits, server errors, and network issues automatically so it continues slowly and never fails outright."
+    }
+  ]
+}

@@ -4,6 +4,23 @@ Each version here becomes a GitHub release. When you bump the version in
 `SKILL.md` and both plugin manifests, add a section for it. The release
 workflow publishes the section as the release notes.
 
+## 1.3.0
+
+- The house style and `lint-spec.mjs` now cover epigrammatic AI prose alongside
+  corporate filler: formulaic `"is not X, it is Y"` antithesis, fortune-cookie
+  slogans, telegraphic verbless fragments, personified UI controls, coy unnamed
+  actors (`"one skill… the others"`), session/debugging war stories, and
+  truth-vouching asides (`"that is not a hypothetical"`).
+- The style guide now requires stating what a system or repository provides
+  before listing what is out of scope, naming concrete tools in place, and
+  verifying that prose rewrites preserve every threshold, inheritance default,
+  tool boundary, and security caveat.
+- Added `scripts/judge-prose.mjs` and `references/prose-calibration.json` (30
+  two-sided calibration items drawn from multi-repo rewrites) to classify
+  paragraph-level style defects and verify that rewritten passages preserve
+  technical meaning across TypeSafe Jev (`jev-1.14.0`), Cloudflare Workers AI
+  (`clef-flash` / `clef`), and local `/v1/systemone` servers.
+
 ## 1.2.1
 
 - The version check no longer loses the page when a script, style, or quoted

@@ -35,6 +35,8 @@ test('generation leftovers fail the lint', () => {
   assert.match(out, /citation debris \("contentReference"\)/);
   assert.match(out, /Unfilled placeholders \("\[Your Name\]", "XX%"\)/);
   assert.match(out, /Bare citation markers in prose \("\[1\]"\)/);
+  assert.match(out, /Formulaic rhetoric detected \("is not a decision, it is"\.\.\.\)|Formulaic rhetoric detected \("is not a decision, it is…"\)/);
+  assert.match(out, /Formulaic rhetoric detected \("That is not a hypothetical…"\)/);
 });
 
 test('layout problems fail the lint', () => {

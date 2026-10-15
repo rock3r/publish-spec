@@ -7,6 +7,7 @@ This file defines the visual system, document topology, and editorial rules for 
 A visitor must understand the subject, current state, principal decision, and next step before reaching the detailed evidence.
 
 - Lead with the outcome. Use a short title (3–7 words naming the subject or change, not a full sentence), a one-sentence purpose, status, version, and update date.
+- State what the system, tool, or repository provides before listing what is out of scope. Never open with a "What this is not for" section before naming the project's own entrypoints, skills, or components.
 - Include verbatim provenance when a spec answers a concrete request, issue, or incident. Quote the original prompt, issue, or support notes in a compact collapsible or ruled block (`Why`) rather than paraphrasing them away.
 - Put a concise executive summary before long analysis. State the problem, current answer, important limit, and next work.
 - Keep the high-level path complete on its own. Move implementation detail, history, raw evidence, and edge cases later.
@@ -63,8 +64,10 @@ The exhibits carry the spec; prose connects and names them. Write for readers wh
 ### Clarity and voice
 
 - **Active voice by default.** Name the actor first: *"The worker claims the row"*, not *"The row is claimed."* Use passive voice only when the actor is genuinely irrelevant or unknown.
+- **Name the actors in place.** Do not make the reader hold indirect labels in their head (*"One skill generates `MOTION.md`; the others read it"*). Name the concrete tools, files, or services where the claim is made (*"`improve-android-motion` drafts `MOTION.md`, and `animate-compose` and `review-android-motion` read it"*).
+- **Complete sentences, not telegraphic fragments.** Concision comes from cutting unnecessary claims, not from dropping verbs and articles (*"State exact numbers, symbols, and APIs instead of vague adjectives"*, not *"Exact. Values, symbols, APIs. No adjectives."*). Clipped fragments force non-native English readers to reconstruct the grammar and hide who does what.
 - **Unambiguous modals in requirements.** Use `must` for a requirement or invariant and `can` for what is possible. Avoid `should`, `may`, or `might` when stating rules or behavior contracts (natural modals are fine when discussing rationale, trade-offs, or future possibilities).
-- **Direct vocabulary.** Prefer common, concrete verbs and nouns over corporate or LLM filler. Define unavoidable jargon and acronyms on first use. Avoid idioms, culture-specific jokes, ornamental metaphors, and Latin phrases.
+- **Direct vocabulary.** Prefer common, concrete verbs and nouns over corporate or LLM filler. Define unavoidable jargon and expand acronyms on first use unless they are universal in the reader's field. Avoid idioms, culture-specific jokes, ornamental metaphors, and Latin phrases.
 - **Specific, traceable claims.** Tie claims to code paths (`path:line`), measurements, issues, or retained artifacts. Separate measured fact, inference, proposal, and unknown.
 
 | Avoid | Prefer |
@@ -269,24 +272,40 @@ These are structural misses, not a word list. Swapping a banned word for a synon
 - Do not write to the operator. No "Certainly", "Great question", "I'd be happy to", "Let's dive in", "Hope this helps", "In conclusion", "It's important to note", or "It's worth noting". Start on the subject.
 - Do not hang a present-participle tail on a sentence only to add importance: highlighting, underscoring, ensuring, reflecting, fostering, showcasing. Write the fact, or cut the tail.
 - Do not write "serves as", "stands as", "marks", "represents", or "boasts" where "is" or "has" works. Do not replace a verb with a stack of Latinate nouns.
-- Do not use "not only X but Y", "it's not X, it's Y", or a triad of synonyms ("robust, seamless, and scalable"). Make one precise claim.
+- Do not use "not only X but Y", "it's not X, it's Y", repeated "X, not Y" antithesis, or a triad of synonyms ("robust, seamless, and scalable"). Keep genuine technical contrasts where a reader could confuse two mechanisms (*"Exits use fewer properties, not shorter durations"*), and cut rhetorical foils (*"`tween(300)` across thirty files is not a decision, it is a copy-paste with a quorum"*).
+- Do not write aphorisms, epigrams, or "mic-drop" sentences that try to sound incisive (*"An accident with a quorum is not a decision"*, *"A product's motion has one voice or none"*, *"A skill that does not beat baseline is decoration"*). State what breaks and why in plain cause-and-effect prose (*"Hardcoded durations scattered across call sites drift apart and make motion inconsistent"*).
+- Do not anthropomorphize UI controls, numbers, or documentation (*"a star is pleased to be lit and merely obedient when put out"*, *"Google's documentation supplies mechanism and withholds judgment"*). State the observable behavior or coverage gap directly.
 - Em dashes are allowed. Two in one sentence, or a dash whose only job is to stage a contrast, is a miss. Use a period.
 - No "Key takeaways" that repeat the summary. No bold label, colon, and paragraph as a default shape. No list whose items are all the same sentence. No closing paragraph that restates the executive summary.
 - Do not explain a step a technical reader can see in the command or the figure. Do not write "simply", "just", "easy", or "please note". Do not moralize ("it is essential that").
 - Do not write a version table, status matrix, or changelog as prose. Those are data. Say what is true now. No "coming in <version>", "as of this writing", or "soon".
+- Do not narrate the work session. Never explain which measurement run failed during drafting or which temporary harness flag produced a number; state the finding and reader-relevant caveats only.
 - Delete canned openings ("In today's rapidly evolving landscape"), generic scene-setting, and inflated metaphors (delve, tapestry, realm, journey, unlock, transformative, pivotal, testament) unless that word is the precise term.
 - Do not cite vague authority ("experts agree"), add generic praise, invent quotations, or assure the reader that the document is clear, complete, or well-researched.
 - Vary sentence length. Do not make every sentence equally long or equally formal.
 - Apply the portability test. If a sentence could move unchanged into another project's spec, it says nothing about this one. Replace it with the fact only this project has, or cut it.
 - Do not invent specifics. Every name, number, measurement, and example must be real and traceable. If you have no real figure, say what is unknown. Do not make one up to sound concrete. Label a hypothetical example as one.
-- Do not tell the reader how to read the text ("that last point matters more than it sounds", "this is the important part"). Show why it matters with the fact or the exhibit, or cut the aside.
+- Do not tell the reader how to read the text or vouch for its truth ("that last point matters more than it sounds", "this is the important part", "that is not theoretical", "this is not a hypothetical", "this was a real bug"). Give the concrete failure case or measurement directly, or cut the aside.
 - Remove generation leftovers: citation markers (`oaicite`, `contentReference`, a bare `[1]` with no source) and placeholders (`[Your Name]`, `[insert statistic]`, `XX%`). `lint-spec.mjs` reports these.
+- When rewriting or condensing existing prose, verify that simplifying the phrasing did not change the meaning. Check that every threshold, inheritance default, tool boundary, isolation requirement, validation limit, and security caveat from the source still holds.
 
-Bad: "The cache serves as a pivotal layer, ensuring low latency and highlighting the system's scalability."
+Bad (corporate filler): "The cache serves as a pivotal layer, ensuring low latency and highlighting the system's scalability."
 
 Good: "The cache skips reads it has already answered. Put the measured change next to the trace it came from."
 
-On the second pass, check only this list: participle tails, inflated copulas, chatbot openers, synonym triads, "not X but Y", a repeated ending, a claim with no source, a sentence that fails the portability test, an invented specific, an interpretive aside, a data table written as prose. One banned word is a warning. A page full of them is a failure. Do not ask whether the page "sounds human".
+Bad (epigrammatic slop): "Without that distinction a skill canonizes accidents: `tween(300)` across thirty files is not a decision, it is a copy-paste with a quorum."
+
+Good: "Only a human can mark an entry `DECIDED`. Without these tags, an agent auditing a codebase would treat a `tween(300)` copied across thirty files as an intentional design rule."
+
+On the second pass, check only this list: participle tails, inflated copulas, chatbot openers, synonym triads, "not X, it is Y" antithesis, epigrams, figurative conceits, telegraphic fragments, withheld names, a repeated ending, a claim with no source, a sentence that fails the portability test, an invented specific, an interpretive or truth-vouching aside, a data table written as prose, or a rewrite that quietly altered a rule or caveat. One banned word is a warning. A page full of them is a failure. Do not ask whether the page "sounds human".
+
+### Calibrated defect classification and rewrite verification (`judge-prose.mjs`)
+
+Never score prose with a binary human-vs.-AI authorship detector: those models flag clean, structured technical English for non-native readers while missing epigrammatic slogans. When an automated prose check is needed beyond `lint-spec.mjs`, use `scripts/judge-prose.mjs` with a System One decision model (`jev-1.14.0`, Cloudflare Workers AI `@cf/cloudflare/clef-flash` or `@cf/cloudflare/clef`, or a local `/v1/systemone` server such as `mlx-community/clef-flash-4bit` or `ggml-org/Clef-Flash-GGUF`):
+
+1. **Calibrate first:** `judge-prose.mjs` runs the 30 two-sided calibration items in `references/prose-calibration.json` before grading a document and withholds output if accuracy falls below `90%`.
+2. **Classify concrete style defects per paragraph (`style_defect`):** Each `<p>`, `<li>`, `<dd>`, or Markdown paragraph (`>= 8` words) is classified across `plain_technical` versus five specific defect categories (`rhetorical_contrast_or_aphorism`, `poetic_or_obscuring_metaphor`, `telegraphic_fragments`, `corporate_or_chatbot_filler`, `self_commentary_or_withheld_names`). Any paragraph with defect probability mass $\ge 0.70$ fails with its line number and a defect-specific rewrite instruction.
+3. **Verify rewrites preserve meaning (`--verify-pairs`):** Rewriting only the flagged paragraphs, pass `[{ id, original, rewritten }]` to `node scripts/judge-prose.mjs --verify-pairs pairs.json`. Every rewritten passage must pass both `style_defect` (`plain_technical`) and `meaning_preserved` (`preserved` vs. `changed_rule_or_threshold` or `dropped_caveat_or_scope`).
 
 ### Design
 

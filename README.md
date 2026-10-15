@@ -46,12 +46,20 @@ By default, `publish-spec` authors and validates static HTML specs locally. To t
 
 `skills/publish-spec/references/deploy.md` is gitignored so environment-specific details are never committed.
 
-## Running the Spec Linter
+## Running the Spec Linter and Prose Classifier
 
 `lint-spec.mjs` requires only `node` (and uses local headless Chrome/Chromium when available for live viewport layout checks at `1280px`, `768px`, and `375px`):
 
 ```bash
 node skills/publish-spec/scripts/lint-spec.mjs <dir-or-html-or-url> --screenshots /tmp/spec-shots
+```
+
+For paragraph-level style-defect classification and post-rewrite semantic verification against a System One decision model (TypeSafe `jev-1.14.0`, Cloudflare Workers AI `@cf/cloudflare/clef-flash` or `clef`, or a local `/v1/systemone` server such as `mlx-community/clef-flash-4bit`):
+
+```bash
+node skills/publish-spec/scripts/judge-prose.mjs --calibrate-only
+node skills/publish-spec/scripts/judge-prose.mjs <dir-or-html-or-md> --out /tmp/prose-findings.json
+node skills/publish-spec/scripts/judge-prose.mjs --verify-pairs /tmp/rewrite-pairs.json
 ```
 
 ## Development
