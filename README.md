@@ -9,7 +9,7 @@ The skill helps agents:
 - surface open decisions with a pre-selected `Suggested` default directly under the exhibit they affect;
 - write in direct, active Plain Technical English without formulaic AI filler or decorative card grids;
 - run a design pass with the latest [Impeccable](https://impeccable.style) skill before any spec is published or called final (Impeccable must be installed);
-- mechanically verify prose budgets, CSS breakpoints, and rendered desktop (`1280px`), narrow (`768px`), and mobile (`375px`) layouts (including static, interactive, and animated diagrams) via a zero-dependency Node + headless Chrome linter (`lint-spec.mjs`), which also catches leftover citation markers and unfilled placeholders;
+- check prose budgets and CSS breakpoints with `lint-spec.mjs`. The linter uses Node built-ins and headless Chrome to check desktop (`1280px`), narrow (`768px`), and mobile (`375px`) layouts. Checks cover static, interactive, and animated diagrams. The linter also catches leftover citation markers and unfilled placeholders;
 - optionally deploy via a user-supplied `skills/publish-spec/references/deploy.md` add-on file (gitignored so personal hosting credentials or routes stay out of version control).
 
 ## Installation
