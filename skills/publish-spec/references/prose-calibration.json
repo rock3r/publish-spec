@@ -138,6 +138,12 @@
       "state": "Show resolved note text and frame numbers in graphite, and render their thumbnails at 85% greyscale and 70% opacity."
     },
     {
+      "name": "plain technical prose with em dashes and en-dash range",
+      "check": "style_defect",
+      "expect_verdict": "pass",
+      "state": "Wide diagrams—especially state machines and sequence charts with 6–8 columns—must sit inside a horizontal scroll container so mobile viewports never overflow."
+    },
+    {
       "name": "epigrammatic quorum antithesis",
       "check": "style_defect",
       "expect_verdict": "fail",

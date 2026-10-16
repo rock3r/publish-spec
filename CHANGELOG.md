@@ -4,6 +4,16 @@ Each version here becomes a GitHub release. When you bump the version in
 `SKILL.md` and both plugin manifests, add a section for it. The release
 workflow publishes the section as the release notes.
 
+## 1.3.5
+
+- Replaced the "two em dashes in one sentence is a miss" rule in
+  `references/house-style.md` so parenthetical em-dash pairs (`a—b—c`),
+  appositives, and en-dash ranges (`10–30`) are explicitly protected during
+  prose passes; only dashes that stage a rhetorical foil or create a >30-word
+  run-on are rewritten.
+- Added a calibration item to `references/prose-calibration.json` verifying that
+  parenthetical em dashes and en-dash ranges score as `plain_technical`.
+
 ## 1.3.4
 
 - Prose checks and rewrite rules now explicitly preserve inline code
