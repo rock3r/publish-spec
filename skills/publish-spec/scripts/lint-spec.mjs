@@ -96,7 +96,8 @@ const CANNED_PHRASES = [
   /in today['’]s rapidly evolving/i,
   /not only\b[\s\S]{1,80}\bbut also\b/i,
   /\b(?:is|are|was|were)\s+not\s+(?:a|an|merely|simply|just)\s+[^.,;—–\-]{2,45}(?:[,;—–\-]\s*|\s+(?:but\s+)?)(?:it(?:\s+(?:is|was)|['’]s)|(?:this|that)\s+(?:is|was))\b/i,
-  /\b(?:that|this)\s+is\s+not\s+(?:a\s+)?(?:theoretical|hypothetical)\b/i,
+  /\b(?:that|this)\s+is\s+not\s+(?:a\s+)?(?:theoretical|hypothetical|coincidence)\b/i,
+  /\bthe\s+(?:converse|inverse)\s+is\s+also\s+(?:true|a\s+failure)\b/i,
   /\bthat\s+last\s+point\s+matters\b/i,
   /\bthis\s+is\s+the\s+important\s+part\b/i,
   /\bone\s+(?:skill|tool|script|service|module)\s+\w+s\s+it\s*;\s*the\s+others\b/i,
@@ -232,8 +233,10 @@ function lintHtmlFile(filePath, rootDir) {
     }
   }
 
-  // Generation leftovers: citation debris and unfilled placeholders
-  const debris = html.match(/oaicite|contentReference|turn\d+(?:search|news|view|fetch)\d+|【\d+[^】]*】/i);
+  // Generation leftovers: citation debris, roll/seed residue, and unfilled placeholders
+  const debris = html.match(
+    /oaicite|contentReference|turn\d+(?:search|news|view|fetch)\d+|【\d+[^】]*】|chosen as the pick over the roll|\bseed key [0-9a-f]{6,}\b/i
+  );
   if (debris) {
     err(rel, `Line ${lineOf(html, debris.index)}: citation debris ("${debris[0]}") — remove it and recheck the claim it was attached to.`);
   }

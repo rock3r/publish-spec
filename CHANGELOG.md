@@ -4,6 +4,17 @@ Each version here becomes a GitHub release. When you bump the version in
 `SKILL.md` and both plugin manifests, add a section for it. The release
 workflow publishes the section as the release notes.
 
+## 1.3.1
+
+- Added in-app copy, CLI help, design-surface metaphor, and privacy/license
+  rewrite rules from the second audit batch to `references/house-style.md` and
+  `scripts/lint-spec.mjs` (including design-roll/seed residue checks and
+  `"this is not a coincidence"` / `"the converse is also true"` rhetoric checks).
+- Expanded `references/prose-calibration.json` from 30 to 40 anonymized
+  two-sided calibration items covering UI settings, beat/accuracy caveats,
+  material metaphors, coy feature riddles, retention disclosures, and
+  distribution-triggered license conditions.
+
 ## 1.3.0
 
 - The house style and `lint-spec.mjs` now cover epigrammatic AI prose alongside
