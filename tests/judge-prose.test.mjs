@@ -16,6 +16,7 @@ import {
   validateCalibrationCoverage,
   extractHtmlParagraphs,
   extractMarkdownParagraphs,
+  checkInlineCodePreserved,
 } from '../skills/publish-spec/scripts/judge-prose.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -128,18 +129,35 @@ test('verdict scores acceptable probability mass and identifies the top defect l
   assert.equal(abstainRes.verdict, 'abstain');
 });
 
-test('extractHtmlParagraphs and extractMarkdownParagraphs skip code, tables, and changelog', () => {
-  const html = readFileSync(join(here, 'fixtures', 'clean', 'index.html'), 'utf8');
+test('extractHtmlParagraphs and extractMarkdownParagraphs skip code, tables, blockquotes, quoted material, and changelog', () => {
+  const html =
+    readFileSync(join(here, 'fixtures', 'clean', 'index.html'), 'utf8') +
+    '<blockquote><p>The original prompt asked to leverage seamless workflows in order to scale.</p></blockquote>' +
+    '<p>The issue report states: "The cache serves as a pivotal layer, ensuring low latency across seamless workflows."</p>';
   const htmlSpans = extractHtmlParagraphs(html, 'index.html');
   assert.equal(htmlSpans.length, 2);
-  assert.ok(htmlSpans.every((s) => !s.text.includes('items[1]') && !s.text.includes('Shortened the expiry')));
+  assert.ok(
+    htmlSpans.every(
+      (s) =>
+        !s.text.includes('items[1]') &&
+        !s.text.includes('Shortened the expiry') &&
+        !s.text.includes('leverage seamless') &&
+        !s.text.includes('pivotal layer')
+    )
+  );
 
   const md = `---
 name: sample
 ---
 # Heading
 
+> The user prompt asked to delve into the overarching tapestry of the system.
+
 The worker claims the next queued row within 30 seconds and records its lease token.
+
+Bad: "The cache serves as a pivotal layer, ensuring low latency."
+
+The user reported: "It is not a decision, it is a copy-paste with a quorum."
 
 | Col | Value |
 | --- | --- |
@@ -155,6 +173,15 @@ const secret = "do not extract code blocks";
   assert.equal(mdSpans.length, 2);
   assert.match(mdSpans[0].text, /worker claims the next queued row/);
   assert.match(mdSpans[1].text, /Each retry waits for the backoff timer/);
+
+  assert.deepEqual(
+    checkInlineCodePreserved('Run `fetchWithRetry` with `--amp-env`.', 'Run `fetchWithRetry` with `--amp-env` enabled.'),
+    []
+  );
+  assert.deepEqual(
+    checkInlineCodePreserved('Run `fetchWithRetry` with `--amp-env`.', 'Run the retry helper with the env flag.'),
+    ['fetchWithRetry', '--amp-env']
+  );
 });
 
 test('CLI refuses --api-key on the command line', async () => {

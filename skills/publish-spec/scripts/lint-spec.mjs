@@ -37,10 +37,16 @@ const info = (scope, msg) => infos.push(`[${scope}] ${msg}`);
 
 const stripTags = (s) =>
   s
-    .replace(/<(script|style|svg|code|pre|kbd|template)\b[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<(script|style|svg|code|pre|kbd|template|blockquote|q)\b[\s\S]*?<\/\1>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/g, ' ')
     .replace(/&(?:amp|lt|gt|quot|#39|mdash|ndash|rarr|larr|darr|uarr);/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const stripQuotedPassages = (s) =>
+  s
+    .replace(/(?:["“][^"”]{15,}["”])/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 
@@ -139,9 +145,10 @@ function lintHtmlFile(filePath, rootDir) {
     }
   }
 
-  // Extract body main content
+  // Extract body main content, and blank out <blockquote>/<q> blocks for prose rhythm checks
   const mainMatch = html.match(/<main\b[\s\S]*?<\/main>/i) || html.match(/<body\b[\s\S]*?<\/body>/i);
   const mainHtml = mainMatch ? mainMatch[0] : html;
+  const proseHtml = mainHtml.replace(/<(blockquote|q)\b[\s\S]*?<\/\1>/gi, (m) => m.replace(/[^\n]/g, ' '));
 
   // Exhibits count (figures, tables, pre blocks, svgs, videos, mockups, interactive diagrams)
   const exhibitMatches =
@@ -154,7 +161,7 @@ function lintHtmlFile(filePath, rootDir) {
   let denseSentences = 0;
   let longestParaWords = 0;
 
-  for (const m of mainHtml.matchAll(/<(p|dd)\b([^>]*)>([\s\S]*?)<\/\1>/gi)) {
+  for (const m of proseHtml.matchAll(/<(p|dd)\b([^>]*)>([\s\S]*?)<\/\1>/gi)) {
     const attrs = m[2] || '';
     if (/\b(?:eyebrow|evidence-label|evidence-value|artifact-order|matrix-note|kicker|caption|meta)\b/i.test(attrs)) {
       continue;
@@ -198,7 +205,7 @@ function lintHtmlFile(filePath, rootDir) {
   }
 
   // Check for 4+ consecutive <p> tags without structural/visual breaks
-  const tagSequence = [...mainHtml.matchAll(/<\/?(p|h1|h2|h3|h4|figure|pre|table|ul|ol|dl|svg|section|div)\b/gi)];
+  const tagSequence = [...proseHtml.matchAll(/<\/?(p|h1|h2|h3|h4|figure|pre|table|ul|ol|dl|svg|section|div|blockquote)\b/gi)];
   let consecutiveP = 0;
   for (const t of tagSequence) {
     const raw = t[0].toLowerCase();
@@ -214,9 +221,10 @@ function lintHtmlFile(filePath, rootDir) {
     }
   }
 
-  // Plain Technical English & Anti-Slop scan
-  const bareProse = stripTags(mainHtml);
-  const lowerProse = bareProse.toLowerCase();
+  // Plain Technical English & Anti-Slop scan (excluding blockquotes, inline code, and quoted passages)
+  const bareProse = stripTags(proseHtml);
+  const unquotedProse = stripQuotedPassages(bareProse);
+  const lowerProse = unquotedProse.toLowerCase();
   const slopHits = [];
   for (const [bad, good] of Object.entries(SLOP_REPLACEMENTS)) {
     const re = new RegExp(`\\b${bad.replace(/\s+/g, '\\s+')}\\b`, 'i');
@@ -229,7 +237,7 @@ function lintHtmlFile(filePath, rootDir) {
   }
 
   for (const pat of CANNED_PHRASES) {
-    const m = bareProse.match(pat);
+    const m = unquotedProse.match(pat);
     if (m) {
       warn(rel, `Formulaic rhetoric detected ("${m[0].slice(0, 45)}…") — rewrite directly.`);
     }

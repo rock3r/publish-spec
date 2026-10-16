@@ -3,7 +3,7 @@ name: publish-spec
 description: Author, validate, and optionally publish a static HTML design spec, PRD, review site, or technical walkthrough with behavior-first structure, clear exhibits, and verified desktop/mobile layouts.
 license: Apache-2.0
 metadata:
-  version: "1.3.3"
+  version: "1.3.4"
   author: "Sebastiano Poggi"
 ---
 
@@ -31,7 +31,7 @@ The house style is a system, not one fixed page template:
 2. **Author or revise the spec:**
    - Apply the structural, editorial, visual, and responsive rules from [references/house-style.md](references/house-style.md).
    - Set the version and add a changelog entry before every publish, following "Version and changelog" in [references/house-style.md](references/house-style.md). A revision that changes the page always gets a new version.
-   - Keep the first screen legible, put the summary before long detail, ensure every visual aid and diagram works at mobile (`375px`), narrow (`768px`), and desktop (`1280px`) widths, and remove formulaic writing and design using "Avoid formulaic AI output" in [references/house-style.md](references/house-style.md). When revising or condensing existing text, verify that every threshold, inheritance default, tool boundary, and caveat still holds. Do not score the page with an AI-authorship detector, and do not ask whether it sounds human.
+   - Keep the first screen legible, put the summary before long detail, ensure every visual aid and diagram works at mobile (`375px`), narrow (`768px`), and desktop (`1280px`) widths, and remove formulaic writing and design using "Avoid formulaic AI output" in [references/house-style.md](references/house-style.md). When revising or condensing existing text, leave fenced code, inline code (`<code>` / `` `...` ``), blockquotes (`<blockquote>` / `>`), and passages containing verbatim external quotes untouched, and verify that every threshold, inheritance default, tool boundary, and caveat still holds. Do not score the page with an AI-authorship detector, and do not ask whether it sounds human.
 
 3. **Run an Impeccable design pass with the latest version:**
    - Update Impeccable to the latest published version first, from the spec directory:

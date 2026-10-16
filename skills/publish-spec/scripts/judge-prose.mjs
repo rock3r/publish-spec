@@ -418,11 +418,45 @@ const stripHtmlInline = (s) =>
 const wordCount = (s) => (s.trim() ? s.trim().split(/\s+/).length : 0);
 const lineOf = (text, index) => text.slice(0, index).split('\n').length;
 
+export function isQuotedOrExamplePassage(text) {
+  const t = text.trim();
+  if (/^(?:bad|good|before|after)\s*(?:\([^)]*\))?\s*:/i.test(t)) return true;
+  if (/^["“][\s\S]{15,}["”](?:\s*[—–-]\s*\S.*)?$/.test(t)) return true;
+  if (
+    /\b(?:wrote|writes|said|says|quoted|quotes|states|stated|reported|reports|asked|asks|prompt|error|message|output|provenance)\b[^.!?]{0,40}["“][^"”]{15,}["”]/i.test(
+      t
+    )
+  ) {
+    return true;
+  }
+  return false;
+}
+
+export function extractInlineCodeSpans(text) {
+  const spans = new Set();
+  for (const m of text.matchAll(/`([^`\n]+)`/g)) {
+    if (m[1].trim()) spans.add(m[1].trim());
+  }
+  for (const m of text.matchAll(/<code\b[^>]*>([\s\S]*?)<\/code>/gi)) {
+    const clean = m[1].replace(/<[^>]+>/g, '').trim();
+    if (clean) spans.add(clean);
+  }
+  return [...spans];
+}
+
+export function checkInlineCodePreserved(original, rewritten) {
+  const origSpans = extractInlineCodeSpans(original);
+  if (origSpans.length === 0) return [];
+  return origSpans.filter((tok) => !rewritten.includes(tok));
+}
+
 export function extractHtmlParagraphs(html, fileLabel = 'index.html', minWords = 8) {
-  // Remove comments, script/style/pre/svg blocks, and the #changelog details block
+  // Remove comments, script/style/pre/svg/blockquote/q blocks, and the #changelog details block
   const cleaned = html
     .replace(/<!--[\s\S]*?-->/g, (m) => m.replace(/[^\n]/g, ' '))
-    .replace(/<(script|style|svg|pre|template)\b[\s\S]*?<\/\1>/gi, (m) => m.replace(/[^\n]/g, ' '))
+    .replace(/<(script|style|svg|pre|template|blockquote|q)\b[\s\S]*?<\/\1>/gi, (m) =>
+      m.replace(/[^\n]/g, ' ')
+    )
     .replace(/<details\b[^>]*\bid\s*=\s*["']?changelog["']?[^>]*>[\s\S]*?<\/details>/gi, (m) =>
       m.replace(/[^\n]/g, ' ')
     );
@@ -432,16 +466,16 @@ export function extractHtmlParagraphs(html, fileLabel = 'index.html', minWords =
   const baseOffset = mainMatch ? mainMatch.index : 0;
 
   const spans = [];
-  for (const m of scopeHtml.matchAll(/<(p|li|dd|blockquote)\b([^>]*)>([\s\S]*?)<\/\1>/gi)) {
+  for (const m of scopeHtml.matchAll(/<(p|li|dd)\b([^>]*)>([\s\S]*?)<\/\1>/gi)) {
     const attrs = m[2] || '';
-    if (/\b(?:doc-meta|eyebrow|evidence-label|evidence-value|artifact-order|matrix-note|kicker|caption|meta)\b/i.test(attrs)) {
+    if (/\b(?:doc-meta|eyebrow|evidence-label|evidence-value|artifact-order|matrix-note|kicker|caption|meta|quote|provenance)\b/i.test(attrs)) {
       continue;
     }
     if (/\bdata-spec-version\b|\bdata-version\b/i.test(m[0])) {
       continue;
     }
     const text = stripHtmlInline(m[3]);
-    if (wordCount(text) < minWords) continue;
+    if (wordCount(text) < minWords || isQuotedOrExamplePassage(text)) continue;
     spans.push({
       file: fileLabel,
       line: lineOf(cleaned, baseOffset + m.index),
@@ -473,7 +507,7 @@ export function extractMarkdownParagraphs(markdown, fileLabel = 'README.md', min
       .replace(/\s+/g, ' ')
       .trim();
     buf = [];
-    if (wordCount(raw) >= minWords) {
+    if (wordCount(raw) >= minWords && !isQuotedOrExamplePassage(raw)) {
       spans.push({ file: fileLabel, line: startLine, tag: 'md', text: raw });
     }
   };
@@ -506,20 +540,20 @@ export function extractMarkdownParagraphs(markdown, fileLabel = 'README.md', min
     }
     if (inFence) continue;
 
-    // Skip headings, tables, HTML tags/comments, horizontal rules, and blank lines
+    // Skip headings, tables, blockquotes (>), HTML tags/comments, horizontal rules, and blank lines
     if (
       !trimmed ||
       /^#{1,6}\s/.test(trimmed) ||
       /^\|.*\|$/.test(trimmed) ||
       /^[-*_]{3,}$/.test(trimmed) ||
       /^<!--/.test(trimmed) ||
-      /^>\s*\[!(?:NOTE|CAUTION|WARNING|IMPORTANT|TIP)\]/i.test(trimmed)
+      /^>/.test(trimmed)
     ) {
       flush();
       continue;
     }
 
-    // New list item or blockquote starts its own span if buffer is non-empty
+    // New list item starts its own span if buffer is non-empty
     if (/^(?:[-*+]|\d+\.)\s+/.test(trimmed)) {
       flush();
       startLine = ln;
@@ -528,7 +562,7 @@ export function extractMarkdownParagraphs(markdown, fileLabel = 'README.md', min
     }
 
     if (buf.length === 0) startLine = ln;
-    buf.push(trimmed.replace(/^>\s*/, ''));
+    buf.push(trimmed);
   }
   flush();
   return spans;
@@ -601,6 +635,7 @@ export async function verifyRewritePairs(pairs, calData, clientOpts, samples = 3
 
   return mapConcurrent(pairs, concurrency, async (p, i) => {
     const id = p.id || (p.file && p.line ? `${p.file}:${p.line}` : `pair-${i + 1}`);
+    const missingCode = checkInlineCodePreserved(p.original, p.rewritten);
     const [styleAns, meaningAns] = await Promise.all([
       askAveraged(p.rewritten, { [styleCheck.id]: toQuestion(styleCheck) }, clientOpts, samples),
       askAveraged(
@@ -611,7 +646,14 @@ export async function verifyRewritePairs(pairs, calData, clientOpts, samples = 3
       ),
     ]);
     const styleRes = verdict(styleCheck, styleAns[styleCheck.id]);
-    const meaningRes = verdict(meaningCheck, meaningAns[meaningCheck.id]);
+    const meaningRes =
+      missingCode.length > 0
+        ? {
+            verdict: 'fail',
+            top: 'dropped_inline_code',
+            why: `dropped or modified inline code token(s): ${missingCode.map((c) => `\`${c}\``).join(', ')}`,
+          }
+        : verdict(meaningCheck, meaningAns[meaningCheck.id]);
 
     const overall =
       styleRes.verdict === 'fail' || meaningRes.verdict === 'fail'
@@ -630,6 +672,7 @@ export async function verifyRewritePairs(pairs, calData, clientOpts, samples = 3
       meaningVerdict: meaningRes.verdict,
       meaningTop: meaningRes.top,
       meaningWhy: meaningRes.why,
+      missingInlineCode: missingCode,
       original: p.original,
       rewritten: p.rewritten,
     };

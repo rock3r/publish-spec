@@ -4,6 +4,17 @@ Each version here becomes a GitHub release. When you bump the version in
 `SKILL.md` and both plugin manifests, add a section for it. The release
 workflow publishes the section as the release notes.
 
+## 1.3.4
+
+- Prose checks and rewrite rules now explicitly preserve inline code
+  (`<code>` / `` `...` ``), `<blockquote>` / `>` blocks, and passages containing
+  attributed quotes or deliberate `Bad:` / `Good:` examples alongside fenced
+  code blocks.
+- `lint-spec.mjs` and `judge-prose.mjs` skip `<blockquote>`, `<q>`, and quoted
+  passages when scanning for prose rhythm or slop patterns, and
+  `judge-prose.mjs --verify-pairs` fails if a rewrite drops or alters any inline
+  code token from the original passage.
+
 ## 1.3.3
 
 - Added rules from the full-repository guide sweep to `references/house-style.md`
