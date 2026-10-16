@@ -120,6 +120,12 @@
       "state": "Use a white background in light mode and #16181f in dark mode. Separate rows with 1px graphite lines and keep the video stage neutral black in both themes."
     },
     {
+      "name": "plain relay and chat retention boundary",
+      "check": "style_defect",
+      "expect_verdict": "pass",
+      "state": "The server does not store chat messages on disk, but relays them in memory without end-to-end encryption, and other participants in the room can still copy or record them."
+    },
+    {
       "name": "epigrammatic quorum antithesis",
       "check": "style_defect",
       "expect_verdict": "fail",
@@ -210,6 +216,12 @@
       "state": "A dial that does not like being told what time it is. A version number that rewards persistence with a performance. We will not spoil the rest."
     },
     {
+      "name": "leaves no trace privacy puffery",
+      "check": "style_defect",
+      "expect_verdict": "fail",
+      "state": "Live room chat is completely ephemeral and leaves no trace behind, ensuring total peace of mind for every participant."
+    },
+    {
       "name": "rewrite preserves token rule",
       "check": "meaning_preserved",
       "expect_verdict": "pass",
@@ -246,6 +258,12 @@
       "state": "ORIGINAL:\nThis is process containment, not a claim that model output is correct or non-malicious. Callers must review generated changes before acting on them.\n\nREWRITTEN:\nProcess containment restricts file and network access, but model output can still be incorrect or malicious. Callers must review generated changes before acting on them."
     },
     {
+      "name": "rewrite narrows export without narrowing deletion cascade",
+      "check": "meaning_preserved",
+      "expect_verdict": "pass",
+      "state": "ORIGINAL:\nThe export archive includes account profile settings, preferences, rooms, and invitations, and excludes session logs and abuse reports. Deleting an account cascades across all account-owned rooms, sessions, peers, and abuse reports, leaving only anonymous aggregate counters.\n\nREWRITTEN:\nAccount export downloads profile settings, preferences, rooms, and invitations only; session logs and abuse reports are excluded. Account deletion removes all account-owned rooms, sessions, peers, and abuse reports, retaining only anonymous aggregate counters."
+    },
+    {
       "name": "rewrite relaxes T-009 ceiling",
       "check": "meaning_preserved",
       "expect_verdict": "fail",
@@ -280,6 +298,12 @@
       "check": "meaning_preserved",
       "expect_verdict": "fail",
       "state": "ORIGINAL:\nIf you distribute a modified version of this software to third parties, you must make the corresponding source code available under the same license. Private or internal modifications do not trigger source-sharing requirements.\n\nREWRITTEN:\nWhenever you modify this software, you must publish the source code of your modifications under the same license."
+    },
+    {
+      "name": "rewrite conflates export scope with deletion cascade",
+      "check": "meaning_preserved",
+      "expect_verdict": "fail",
+      "state": "ORIGINAL:\nThe export archive includes account profile settings, preferences, rooms, and invitations, while excluding session logs and abuse reports. Deleting an account cascades across all account-owned rooms, sessions, peers, and abuse reports, leaving only anonymous aggregate counters.\n\nREWRITTEN:\nBoth account export and account deletion apply only to profile settings, preferences, rooms, and invitations; session logs and abuse reports are not removed when an account is deleted."
     }
   ]
 }

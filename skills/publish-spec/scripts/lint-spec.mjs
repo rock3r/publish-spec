@@ -98,6 +98,7 @@ const CANNED_PHRASES = [
   /\b(?:is|are|was|were)\s+not\s+(?:a|an|merely|simply|just)\s+[^.,;—–\-]{2,45}(?:[,;—–\-]\s*|\s+(?:but\s+)?)(?:it(?:\s+(?:is|was)|['’]s)|(?:this|that)\s+(?:is|was))\b/i,
   /\b(?:that|this)\s+is\s+not\s+(?:a\s+)?(?:theoretical|hypothetical|coincidence)\b/i,
   /\bthe\s+(?:converse|inverse)\s+is\s+also\s+(?:true|a\s+failure)\b/i,
+  /\bleaves\s+no\s+trace\b/i,
   /\bthat\s+last\s+point\s+matters\b/i,
   /\bthis\s+is\s+the\s+important\s+part\b/i,
   /\bone\s+(?:skill|tool|script|service|module)\s+\w+s\s+it\s*;\s*the\s+others\b/i,

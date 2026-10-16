@@ -4,6 +4,16 @@ Each version here becomes a GitHub release. When you bump the version in
 `SKILL.md` and both plugin manifests, add a section for it. The release
 workflow publishes the section as the release notes.
 
+## 1.3.2
+
+- Added rules for privacy/retention timers, relay-vs.-E2EE chat disclosures,
+  export-vs.-deletion cascade boundaries, and source-available vs. open-source
+  license classifications to `references/house-style.md` and
+  `scripts/lint-spec.mjs` (`"leaves no trace"`).
+- Expanded `references/prose-calibration.json` to 44 anonymized two-sided
+  calibration items covering chat relay boundaries, `"leaves no trace"`
+  privacy puffery, and export-scope vs. deletion-cascade rewrites.
+
 ## 1.3.1
 
 - Added in-app copy, CLI help, design-surface metaphor, and privacy/license
