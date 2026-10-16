@@ -4,6 +4,21 @@ Each version here becomes a GitHub release. When you bump the version in
 `SKILL.md` and both plugin manifests, add a section for it. The release
 workflow publishes the section as the release notes.
 
+## 1.3.6
+
+- Added telegraphic list patterns (catalog `path.md — noun, noun, noun` bullets,
+  arrow/`=` chains in prose, and verbless smell checklists), inverted antithesis
+  (`"X is a Y, not a Z"`, `"Treat X as Y, not Z"`, semicolon clause-flips),
+  colloquial self-commentary (`"rabbit hole"`, `"admittedly janky"`), fenced
+  output-template guidance, and locale-specific punctuation spacing rules
+  (`en-US` closed em dashes vs. `en-GB` spaced dashes) to
+  `references/house-style.md` and `scripts/lint-spec.mjs`.
+- Fixed `judge-prose.mjs` so invoking it through a symlinked skill path runs
+  `main()`, added two-stage adaptive sampling (`askAdaptive`), and added
+  `--verify-against <baseline.json>` with per-file LCS span alignment.
+- Expanded `references/prose-calibration.json` from 51 to 65 two-sided
+  calibration items.
+
 ## 1.3.5
 
 - Replaced the "two em dashes in one sentence is a miss" rule in

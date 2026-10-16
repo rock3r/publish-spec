@@ -3,7 +3,7 @@ name: publish-spec
 description: Author, validate, and optionally publish a static HTML design spec, PRD, review site, or technical walkthrough with behavior-first structure, clear exhibits, and verified desktop/mobile layouts.
 license: Apache-2.0
 metadata:
-  version: "1.3.5"
+  version: "1.3.6"
   author: "Sebastiano Poggi"
 ---
 
@@ -54,7 +54,7 @@ The house style is a system, not one fixed page template:
 
    - `lint-spec.mjs` checks prose rhythm, vocabulary, diff/code hygiene, secret leaks, CSS media queries, and launches headless Chrome at `1280px`, `768px`, and `375px` (including clicking interactive diagram/state controls on mobile) to catch horizontal overflow, uncollapsed grids, crushed text columns, and illegible SVG text.
    - Fix every reported error, address warnings, and visually inspect the generated desktop (`1280px`) and mobile (`375px`) screenshots in `/tmp/spec-shots`.
-   - When a System One decision-model endpoint is configured (TypeSafe Jev `jev-1.14.0`, Cloudflare Workers AI `@cf/cloudflare/clef-flash` / `clef`, or a local `/v1/systemone` server such as `mlx-community/clef-flash-4bit`), you can also run `node <skill-dir>/scripts/judge-prose.mjs .` to classify each paragraph against the calibrated defect categories in [references/prose-calibration.json](references/prose-calibration.json) and `node <skill-dir>/scripts/judge-prose.mjs --verify-pairs <pairs.json>` to confirm that rewritten paragraphs preserve all original rules and caveats.
+   - When a System One decision-model endpoint is configured (TypeSafe Jev `jev-1.14.0`, Cloudflare Workers AI `@cf/cloudflare/clef-flash` / `clef`, or a local `/v1/systemone` server such as `mlx-community/clef-flash-4bit`), you can also run `node <skill-dir>/scripts/judge-prose.mjs . --out /tmp/baseline.json` to classify each paragraph against the calibrated defect categories in [references/prose-calibration.json](references/prose-calibration.json) and `node <skill-dir>/scripts/judge-prose.mjs . --verify-against /tmp/baseline.json` (or `--verify-pairs <pairs.json>`) to confirm that rewritten paragraphs preserve all original rules, inline code tokens, and caveats.
    - Also run the source project's own validation or local link checks when they exist.
 
 5. **Publish / deploy (optional, via `references/deploy.md`):**

@@ -1,6 +1,6 @@
 {
   "name": "publish-spec",
-  "version": "1.3.5",
+  "version": "1.3.6",
   "description": "Author, validate, and optionally publish static HTML design specs, PRDs, review sites, and technical walkthroughs with behavior-first structure, clear exhibits, and verified desktop/mobile layouts.",
   "author": {
     "name": "Sebastiano Poggi",

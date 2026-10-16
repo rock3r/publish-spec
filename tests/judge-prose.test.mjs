@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
-import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,6 +17,7 @@ import {
   extractHtmlParagraphs,
   extractMarkdownParagraphs,
   checkInlineCodePreserved,
+  diffSpansLcs,
 } from '../skills/publish-spec/scripts/judge-prose.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -184,15 +185,40 @@ const secret = "do not extract code blocks";
   );
 });
 
-test('CLI refuses --api-key on the command line', async () => {
-  const res = await new Promise((done) => {
-    const child = spawn(process.execPath, [scriptPath, '--api-key', 'secret']);
-    let err = '';
-    child.stderr.on('data', (c) => (err += c));
-    child.on('close', (code) => done({ code, err }));
-  });
-  assert.equal(res.code, 2);
-  assert.match(res.err, /--api-key is not accepted/);
+test('CLI refuses --api-key on the command line and executes main() through a symlink', async () => {
+  const tmp = mkdtempSync(join(tmpdir(), 'judge-prose-symlink-'));
+  const symlinkPath = join(tmp, 'judge-prose-link.mjs');
+  symlinkSync(scriptPath, symlinkPath);
+  try {
+    const res = await new Promise((done) => {
+      const child = spawn(process.execPath, [symlinkPath, '--api-key', 'secret']);
+      let err = '';
+      child.stderr.on('data', (c) => (err += c));
+      child.on('close', (code) => done({ code, err }));
+    });
+    assert.equal(res.code, 2);
+    assert.match(res.err, /--api-key is not accepted/);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('diffSpansLcs aligns unchanged and modified spans in order', () => {
+  const oldSpans = [
+    { line: 1, text: 'First clean paragraph stays unchanged.' },
+    { line: 5, text: 'Skippability is a diagnostic, not a KPI.' },
+    { line: 9, text: 'Last clean paragraph stays unchanged.' },
+  ];
+  const newSpans = [
+    { line: 1, text: 'First clean paragraph stays unchanged.' },
+    { line: 5, text: 'Use skippability percentages only to diagnose measured frame-time regressions.' },
+    { line: 9, text: 'Last clean paragraph stays unchanged.' },
+  ];
+  const segs = diffSpansLcs(oldSpans, newSpans);
+  assert.equal(segs.length, 3);
+  assert.equal(segs[0].type, 'same');
+  assert.equal(segs[1].type, 'diff');
+  assert.equal(segs[2].type, 'same');
 });
 
 test('CLI runs style checks and --verify-pairs against a local SystemOne stub server', async () => {
@@ -282,6 +308,33 @@ test('CLI runs style checks and --verify-pairs against a local SystemOne stub se
     assert.equal(verifyRes.code, 1, verifyRes.out);
     assert.match(verifyRes.out, /FAIL\s+bad-pair.*changed_rule_or_threshold/);
     assert.match(verifyRes.out, /1 pass, 1 fail/);
+
+    // Also test --verify-against LCS baseline alignment
+    const mdFile = join(tmp, 'doc.md');
+    writeFileSync(
+      mdFile,
+      [
+        'The cache returns a stored answer when the same read arrives twice within 30 seconds.',
+        '',
+        'Repeating a timer is not a decision, it is a copy-paste with a quorum.',
+      ].join('\n')
+    );
+    const baselineJson = join(tmp, 'baseline.json');
+    const baseRun = await runCli(mdFile, '--out', baselineJson);
+    assert.equal(baseRun.code, 1, baseRun.out);
+
+    // Rewrite the failing second paragraph in place
+    writeFileSync(
+      mdFile,
+      [
+        'The cache returns a stored answer when the same read arrives twice within 30 seconds.',
+        '',
+        'Without these tags, an agent auditing a codebase would treat a repeated timer as a design rule.',
+      ].join('\n')
+    );
+    const againstPass = await runCli(mdFile, '--verify-against', baselineJson);
+    assert.equal(againstPass.code, 0, againstPass.out);
+    assert.match(againstPass.out, /2 pass, 0 fail/);
   } finally {
     server.close();
     rmSync(tmp, { recursive: true, force: true });

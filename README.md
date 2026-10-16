@@ -59,6 +59,7 @@ For paragraph-level style-defect classification and post-rewrite semantic verifi
 ```bash
 node skills/publish-spec/scripts/judge-prose.mjs --calibrate-only
 node skills/publish-spec/scripts/judge-prose.mjs <dir-or-html-or-md> --out /tmp/prose-findings.json
+node skills/publish-spec/scripts/judge-prose.mjs <dir-or-html-or-md> --verify-against /tmp/prose-findings.json
 node skills/publish-spec/scripts/judge-prose.mjs --verify-pairs /tmp/rewrite-pairs.json
 ```
 

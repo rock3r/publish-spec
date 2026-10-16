@@ -18,7 +18,7 @@
  *   node scripts/judge-prose.mjs --verify-pairs pairs.json [--out verify.json] [--samples 3]
  */
 
-import { readFileSync, existsSync, statSync, readdirSync, writeFileSync } from 'node:fs';
+import { readFileSync, existsSync, statSync, readdirSync, writeFileSync, realpathSync } from 'node:fs';
 import { resolve, join, relative, extname, dirname, basename } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { homedir } from 'node:os';
@@ -206,6 +206,30 @@ export async function askAveraged(state, questions, clientOpts, samples = 3) {
   }
   const runs = [];
   for (let i = 0; i < count; i++) {
+    const r = await ask(state, questions, clientOpts);
+    runs.push(r.answers);
+  }
+  return averageAnswers(runs, Object.keys(questions));
+}
+
+export async function askAdaptive(
+  state,
+  questions,
+  clientOpts,
+  samples = 3,
+  fastPassCheckId = 'style_defect',
+  fastPassOption = 'plain_technical',
+  fastPassThreshold = 0.88
+) {
+  const count = Math.max(1, samples);
+  const first = (await ask(state, questions, clientOpts)).answers;
+  if (count === 1) return first;
+  const probs = first[fastPassCheckId]?.probabilities || {};
+  if ((probs[fastPassOption] ?? 0) >= fastPassThreshold) {
+    return first;
+  }
+  const runs = [first];
+  for (let i = 1; i < count; i++) {
     const r = await ask(state, questions, clientOpts);
     runs.push(r.answers);
   }
@@ -606,12 +630,21 @@ export function collectTargetSpans(targetPath, minWords = 8) {
   return allSpans;
 }
 
-export async function judgeParagraphs(spans, calData, clientOpts, samples = 3, concurrency = 6) {
+export async function judgeParagraphs(
+  spans,
+  calData,
+  clientOpts,
+  samples = 3,
+  concurrency = 6,
+  adaptive = true
+) {
   const check = calData.checks.style_defect;
   const remedies = check.remedies || {};
 
   return mapConcurrent(spans, concurrency, async (span) => {
-    const answers = await askAveraged(span.text, { [check.id]: toQuestion(check) }, clientOpts, samples);
+    const answers = adaptive
+      ? await askAdaptive(span.text, { [check.id]: toQuestion(check) }, clientOpts, samples, check.id)
+      : await askAveraged(span.text, { [check.id]: toQuestion(check) }, clientOpts, samples);
     const res = verdict(check, answers[check.id]);
     return {
       file: span.file,
@@ -626,6 +659,154 @@ export async function judgeParagraphs(spans, calData, clientOpts, samples = 3, c
       text: span.text,
     };
   });
+}
+
+/**
+ * Aligns old and new spans for a single file using Longest Common Subsequence (LCS) on
+ * normalized text, returning ordered segments of `{ type: 'same', oldSpan, newSpan }` or
+ * `{ type: 'diff', oldSpans, newSpans }`.
+ */
+export function diffSpansLcs(oldSpans, newSpans) {
+  const m = oldSpans.length;
+  const n = newSpans.length;
+  const dp = Array.from({ length: m + 1 }, () => new Int32Array(n + 1));
+  for (let i = m - 1; i >= 0; i--) {
+    const oi = oldSpans[i].text.trim();
+    for (let j = n - 1; j >= 0; j--) {
+      if (oi === newSpans[j].text.trim()) {
+        dp[i][j] = 1 + dp[i + 1][j + 1];
+      } else {
+        dp[i][j] = Math.max(dp[i + 1][j], dp[i][j + 1]);
+      }
+    }
+  }
+
+  const anchors = [];
+  let i = 0;
+  let j = 0;
+  while (i < m && j < n) {
+    if (oldSpans[i].text.trim() === newSpans[j].text.trim()) {
+      anchors.push([i, j]);
+      i++;
+      j++;
+    } else if (dp[i + 1][j] >= dp[i][j + 1]) {
+      i++;
+    } else {
+      j++;
+    }
+  }
+  anchors.push([m, n]);
+
+  const segments = [];
+  let prevI = 0;
+  let prevJ = 0;
+  for (const [ai, aj] of anchors) {
+    if (ai > prevI || aj > prevJ) {
+      segments.push({
+        type: 'diff',
+        oldSpans: oldSpans.slice(prevI, ai),
+        newSpans: newSpans.slice(prevJ, aj),
+      });
+    }
+    if (ai < m && aj < n) {
+      segments.push({ type: 'same', oldSpan: oldSpans[ai], newSpan: newSpans[aj] });
+    }
+    prevI = ai + 1;
+    prevJ = aj + 1;
+  }
+  return segments;
+}
+
+export async function verifyAgainstBaseline(
+  baselineItems,
+  currentSpans,
+  calData,
+  clientOpts,
+  samples = 3,
+  concurrency = 6,
+  adaptive = true
+) {
+  const oldByFile = new Map();
+  for (const item of baselineItems) {
+    const list = oldByFile.get(item.file) || [];
+    list.push(item);
+    oldByFile.set(item.file, list);
+  }
+  const newByFile = new Map();
+  for (const span of currentSpans) {
+    const list = newByFile.get(span.file) || [];
+    list.push(span);
+    newByFile.set(span.file, list);
+  }
+
+  const allFiles = [...new Set([...oldByFile.keys(), ...newByFile.keys()])];
+  const unchangedResults = [];
+  const rewritePairs = [];
+  const addedSpans = [];
+
+  for (const file of allFiles) {
+    const oldList = oldByFile.get(file) || [];
+    const newList = newByFile.get(file) || [];
+    const segments = diffSpansLcs(oldList, newList);
+
+    for (const seg of segments) {
+      if (seg.type === 'same') {
+        const b = seg.oldSpan;
+        unchangedResults.push({
+          id: `${file}:${seg.newSpan.line}`,
+          kind: b.verdict === 'fail' ? 'unfixed_fail' : `unchanged_${b.verdict}`,
+          overall: b.verdict,
+          styleVerdict: b.verdict,
+          styleDefect: b.defect || null,
+          styleWhy: b.verdict === 'fail' ? `unfixed from baseline: ${b.why}` : b.why,
+          styleRemedy: b.remedy || null,
+          meaningVerdict: 'pass',
+          meaningTop: 'unchanged',
+          meaningWhy: 'text unchanged from baseline',
+          original: b.text,
+          rewritten: seg.newSpan.text,
+        });
+      } else if (seg.oldSpans.length > 0 && seg.newSpans.length > 0) {
+        rewritePairs.push({
+          id: `${file}:${seg.newSpans[0].line}`,
+          original: seg.oldSpans.map((s) => s.text).join('\n\n'),
+          rewritten: seg.newSpans.map((s) => s.text).join('\n\n'),
+        });
+      } else if (seg.newSpans.length > 0) {
+        addedSpans.push(...seg.newSpans);
+      }
+    }
+  }
+
+  const [verifiedPairs, judgedAdded] = await Promise.all([
+    rewritePairs.length > 0
+      ? verifyRewritePairs(rewritePairs, calData, clientOpts, samples, concurrency)
+      : [],
+    addedSpans.length > 0
+      ? judgeParagraphs(addedSpans, calData, clientOpts, samples, concurrency, adaptive)
+      : [],
+  ]);
+
+  const addedResults = judgedAdded.map((r) => ({
+    id: `${r.file}:${r.line}`,
+    kind: 'added_span',
+    overall: r.verdict,
+    styleVerdict: r.verdict,
+    styleDefect: r.defect,
+    styleWhy: r.why,
+    styleRemedy: r.remedy,
+    meaningVerdict: 'pass',
+    meaningTop: 'added',
+    meaningWhy: 'newly added span',
+    original: '',
+    rewritten: r.text,
+  }));
+
+  return [
+    ...unchangedResults,
+    ...verifiedPairs.map((r) => ({ ...r, kind: 'rewritten_hunk' })),
+    ...addedResults,
+  ];
 }
 
 export async function verifyRewritePairs(pairs, calData, clientOpts, samples = 3, concurrency = 6) {
@@ -696,10 +877,12 @@ async function main() {
   const calibrateOnly = flags.has('--calibrate-only');
   const skipCalibrate = flags.has('--skip-calibration');
   const strict = flags.has('--strict');
+  const adaptive = !flags.has('--no-adaptive');
   const samples = Number(getOpt('--samples') || 3);
   const calibrationFloor = Number(getOpt('--calibration-floor') || 0.9);
   const calibrationPath = resolve(getOpt('--calibration') || DEFAULT_CALIBRATION_PATH);
   const verifyPairsPath = getOpt('--verify-pairs');
+  const verifyAgainstPath = getOpt('--verify-against');
   const outPath = getOpt('--out');
 
   const optWithValues = new Set([
@@ -707,6 +890,7 @@ async function main() {
     '--calibration-floor',
     '--calibration',
     '--verify-pairs',
+    '--verify-against',
     '--out',
     '--endpoint',
     '--model',
@@ -772,7 +956,39 @@ async function main() {
   }
 
   const spans = collectTargetSpans(target);
-  const results = await judgeParagraphs(spans, calData, clientOpts, samples);
+
+  if (verifyAgainstPath) {
+    const rawBaseline = JSON.parse(readFileSync(resolve(verifyAgainstPath), 'utf8'));
+    const baselineItems = Array.isArray(rawBaseline) ? rawBaseline : rawBaseline.results || [];
+    const results = await verifyAgainstBaseline(
+      baselineItems,
+      spans,
+      calData,
+      clientOpts,
+      samples,
+      6,
+      adaptive
+    );
+    if (outPath) {
+      writeFileSync(resolve(outPath), JSON.stringify(results, null, 2));
+    }
+    const tally = { pass: 0, fail: 0, abstain: 0 };
+    for (const r of results) {
+      tally[r.overall]++;
+      if (r.overall !== 'pass') {
+        console.error(
+          `  ${r.overall.toUpperCase().padEnd(7)} ${r.id} [${r.kind}] — style=${r.styleVerdict} (${r.styleWhy}), meaning=${r.meaningVerdict} (${r.meaningWhy})`
+        );
+      }
+    }
+    console.error(
+      `\nBaseline diff verification (${target}): ${tally.pass} pass, ${tally.fail} fail, ${tally.abstain} abstain`
+    );
+    if (tally.fail > 0 || (strict && tally.abstain > 0)) process.exit(1);
+    process.exit(0);
+  }
+
+  const results = await judgeParagraphs(spans, calData, clientOpts, samples, 6, adaptive);
   if (outPath) {
     writeFileSync(resolve(outPath), JSON.stringify(results, null, 2));
   }
@@ -790,7 +1006,15 @@ async function main() {
   if (tally.fail > 0 || (strict && tally.abstain > 0)) process.exit(1);
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+const isMainModule = () => {
+  if (!process.argv[1]) return false;
+  try {
+    return realpathSync(fileURLToPath(import.meta.url)) === realpathSync(resolve(process.argv[1]));
+  } catch {
+    return import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
+  }
+};
+if (isMainModule()) {
   main().catch((e) => {
     console.error(e.message || e);
     process.exit(1);
