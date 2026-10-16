@@ -99,6 +99,7 @@ const CANNED_PHRASES = [
   /\b(?:that|this)\s+is\s+not\s+(?:a\s+)?(?:theoretical|hypothetical|coincidence)\b/i,
   /\bthe\s+(?:converse|inverse)\s+is\s+also\s+(?:true|a\s+failure)\b/i,
   /\bleaves\s+no\s+trace\b/i,
+  /\bcreative\s+north\s+star\b/i,
   /\bthat\s+last\s+point\s+matters\b/i,
   /\bthis\s+is\s+the\s+important\s+part\b/i,
   /\bone\s+(?:skill|tool|script|service|module)\s+\w+s\s+it\s*;\s*the\s+others\b/i,

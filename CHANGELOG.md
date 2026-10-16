@@ -4,6 +4,18 @@ Each version here becomes a GitHub release. When you bump the version in
 `SKILL.md` and both plugin manifests, add a section for it. The release
 workflow publishes the section as the release notes.
 
+## 1.3.3
+
+- Added rules from the full-repository guide sweep to `references/house-style.md`
+  and `scripts/lint-spec.mjs`: check every guide, skill, and gateway-backed spec
+  site in a tree rather than only patching quoted audit examples; avoid
+  theatrical rule/heading slogans (`"Creative North Star"`, `"It Has One Job"`,
+  `"The Graphite Recedes Rule"`); keep fenced code blocks byte-identical during
+  prose passes; preserve intentionality markers (`deliberately`, `by design`) on
+  omissions; and update cross-references when renaming section/stage labels.
+- Expanded `references/prose-calibration.json` to 50 anonymized two-sided
+  calibration items.
+
 ## 1.3.2
 
 - Added rules for privacy/retention timers, relay-vs.-E2EE chat disclosures,

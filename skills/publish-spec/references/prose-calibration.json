@@ -126,6 +126,18 @@
       "state": "The server does not store chat messages on disk, but relays them in memory without end-to-end encryption, and other participants in the room can still copy or record them."
     },
     {
+      "name": "plain atomic lock-directory coordination",
+      "check": "style_defect",
+      "expect_verdict": "pass",
+      "state": "The CLI coordinates device leases through a state file in a local user-private directory with mode 0700. An atomic directory lock serializes state changes without a background daemon."
+    },
+    {
+      "name": "plain resolved-note color rule",
+      "check": "style_defect",
+      "expect_verdict": "pass",
+      "state": "Show resolved note text and frame numbers in graphite, and render their thumbnails at 85% greyscale and 70% opacity."
+    },
+    {
       "name": "epigrammatic quorum antithesis",
       "check": "style_defect",
       "expect_verdict": "fail",
@@ -222,6 +234,18 @@
       "state": "Live room chat is completely ephemeral and leaves no trace behind, ensuring total peace of mind for every participant."
     },
     {
+      "name": "theatrical rule-name personification",
+      "check": "style_defect",
+      "expect_verdict": "fail",
+      "state": "The Under-the-Eye Rule: accent orange marks only what sits under the eye, while The Graphite Recedes Rule lets resolved notes bow out quietly."
+    },
+    {
+      "name": "not a coincidence rhetorical framing",
+      "check": "style_defect",
+      "expect_verdict": "fail",
+      "state": "The component list does not change when you switch themes. This is not a coincidence of the current release: it is the payoff of keeping the foundation layer pure."
+    },
+    {
       "name": "rewrite preserves token rule",
       "check": "meaning_preserved",
       "expect_verdict": "pass",
@@ -264,6 +288,12 @@
       "state": "ORIGINAL:\nThe export archive includes account profile settings, preferences, rooms, and invitations, and excludes session logs and abuse reports. Deleting an account cascades across all account-owned rooms, sessions, peers, and abuse reports, leaving only anonymous aggregate counters.\n\nREWRITTEN:\nAccount export downloads profile settings, preferences, rooms, and invitations only; session logs and abuse reports are excluded. Account deletion removes all account-owned rooms, sessions, peers, and abuse reports, retaining only anonymous aggregate counters."
     },
     {
+      "name": "rewrite preserves deliberate non-publication policy",
+      "check": "meaning_preserved",
+      "expect_verdict": "pass",
+      "state": "ORIGINAL:\nThe standalone CLI module is deliberately not published to Maven Central; consumers run it from the release archive instead.\n\nREWRITTEN:\nBy design, the project does not publish the standalone CLI module to Maven Central. Download and run it from the GitHub release archive instead."
+    },
+    {
       "name": "rewrite relaxes T-009 ceiling",
       "check": "meaning_preserved",
       "expect_verdict": "fail",
@@ -304,6 +334,12 @@
       "check": "meaning_preserved",
       "expect_verdict": "fail",
       "state": "ORIGINAL:\nThe export archive includes account profile settings, preferences, rooms, and invitations, while excluding session logs and abuse reports. Deleting an account cascades across all account-owned rooms, sessions, peers, and abuse reports, leaving only anonymous aggregate counters.\n\nREWRITTEN:\nBoth account export and account deletion apply only to profile settings, preferences, rooms, and invitations; session logs and abuse reports are not removed when an account is deleted."
+    },
+    {
+      "name": "rewrite turns deliberate omission into unsupported bug",
+      "check": "meaning_preserved",
+      "expect_verdict": "fail",
+      "state": "ORIGINAL:\nHook guardrails check cooperative coding agents only; they are deliberately not an OS-level sandbox against hostile local users.\n\nREWRITTEN:\nHook guardrails provide an OS-level sandbox that blocks hostile local users from running unauthorized commands."
     }
   ]
 }
