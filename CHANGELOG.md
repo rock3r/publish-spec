@@ -4,6 +4,18 @@ Each version here becomes a GitHub release. When you bump the version in
 `SKILL.md` and both plugin manifests, add a section for it. The release
 workflow publishes the section as the release notes.
 
+## 1.3.7
+
+- Reconciled the "Writing" rules under "Avoid formulaic AI output" in
+  `references/house-style.md` with the structural rewrite kept in older local
+  copies: the synonym-triad rule again ends with "Make one precise claim", and
+  a dash that stages a rhetorical foil or a >30-word run-on is now fixed by
+  ending the sentence with a period. Parenthetical em-dash pairs and en-dash
+  ranges stay protected, as in 1.3.5.
+- Review item 7 now names "Avoid formulaic AI output" and its fixed
+  second-pass checklist, and repeats the density rule and the ban on detector
+  scores and "sounds human" checks, so it matches step 2 in `SKILL.md`.
+
 ## 1.3.6
 
 - Added telegraphic list patterns (catalog `path.md — noun, noun, noun` bullets,
